@@ -155,7 +155,7 @@ class TestAddressGenerator:
         addr_gen = AddressGenerator(self.seeder, 'united_states')
         assert addr_gen.country == 'united_states'
         assert len(addr_gen._city_data) > 0
-        assert 'New York' in addr_gen._city_data
+        assert 'New York City' in addr_gen._city_data
     
     def test_initialization_pakistan(self):
         """Test AddressGenerator initialization for Pakistan"""

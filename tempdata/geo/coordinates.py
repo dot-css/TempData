@@ -29,9 +29,15 @@ class CoordinateGenerator(BaseGenerator):
     def _load_city_boundaries(self) -> None:
         """Load city boundary data from JSON file"""
         try:
-            data_path = Path(__file__).parent.parent / "data" / "countries" / "city_boundaries.json"
-            if data_path.exists():
-                with open(data_path, 'r', encoding='utf-8') as f:
+            # Try comprehensive data first, fallback to original
+            comprehensive_file = Path(__file__).parent.parent / "data" / "countries" / "comprehensive_city_boundaries.json"
+            city_boundaries_file = Path(__file__).parent.parent / "data" / "countries" / "city_boundaries.json"
+            
+            if comprehensive_file.exists():
+                with open(comprehensive_file, 'r', encoding='utf-8') as f:
+                    self._city_data = json.load(f)
+            elif city_boundaries_file.exists():
+                with open(city_boundaries_file, 'r', encoding='utf-8') as f:
                     self._city_data = json.load(f)
             else:
                 self._city_data = {}

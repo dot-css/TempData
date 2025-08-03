@@ -7,6 +7,8 @@ Generates realistic addresses following country-specific formatting and patterns
 from dataclasses import dataclass
 from typing import List, Dict, Any, Tuple, Optional
 import random
+import json
+from pathlib import Path
 from ..core.base_generator import BaseGenerator
 from ..core.seeding import MillisecondSeeder
 from ..core.localization import LocalizationEngine
@@ -82,7 +84,24 @@ class AddressGenerator(BaseGenerator):
         self._city_data = self._get_country_cities()
     
     def _get_country_cities(self) -> List[str]:
-        """Get list of cities for the country"""
+        """Get list of cities for the country from states/provinces data"""
+        try:
+            # Load comprehensive states/provinces data
+            states_file = Path(__file__).parent.parent / "data" / "countries" / "states_provinces.json"
+            if states_file.exists():
+                with open(states_file, 'r', encoding='utf-8') as f:
+                    states_data = json.load(f)
+                    
+                if self.country in states_data:
+                    # Collect all cities from all states/provinces
+                    all_cities = []
+                    for state, cities in states_data[self.country].items():
+                        all_cities.extend(cities)
+                    return all_cities
+        except (FileNotFoundError, json.JSONDecodeError):
+            pass
+        
+        # Fallback to hardcoded lists if file loading fails
         city_lists = {
             'united_states': [
                 'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix',
@@ -210,6 +229,24 @@ class AddressGenerator(BaseGenerator):
     
     def _generate_state_province(self) -> str:
         """Generate country-specific state/province"""
+        try:
+            # Load comprehensive states/provinces data
+            states_file = Path(__file__).parent.parent / "data" / "countries" / "states_provinces.json"
+            if states_file.exists():
+                with open(states_file, 'r', encoding='utf-8') as f:
+                    states_data = json.load(f)
+                    
+                if self.country in states_data:
+                    # Get list of states/provinces for this country
+                    states_list = list(states_data[self.country].keys())
+                    # Use seeder for reproducible state selection
+                    state_seed = self.seeder.get_contextual_seed('state_selection')
+                    random.seed(state_seed)
+                    return random.choice(states_list)
+        except (FileNotFoundError, json.JSONDecodeError):
+            pass
+        
+        # Fallback to hardcoded state data
         state_data = {
             'united_states': [
                 'California', 'Texas', 'Florida', 'New York', 'Pennsylvania',

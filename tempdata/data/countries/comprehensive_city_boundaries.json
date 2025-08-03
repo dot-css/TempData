@@ -1,0 +1,260 @@
+{
+  "united_states": {
+    "new_york": {
+      "center": [40.7128, -74.0060],
+      "bounds": {
+        "north": 40.9176,
+        "south": 40.4774,
+        "east": -73.7004,
+        "west": -74.2591
+      }
+    },
+    "los_angeles": {
+      "center": [34.0522, -118.2437],
+      "bounds": {
+        "north": 34.3373,
+        "south": 33.7037,
+        "east": -118.1553,
+        "west": -118.6681
+      }
+    },
+    "chicago": {
+      "center": [41.8781, -87.6298],
+      "bounds": {
+        "north": 42.0230,
+        "south": 41.6445,
+        "east": -87.5240,
+        "west": -87.9401
+      }
+    },
+    "houston": {
+      "center": [29.7604, -95.3698],
+      "bounds": {
+        "north": 30.1104,
+        "south": 29.4104,
+        "east": -95.0198,
+        "west": -95.7198
+      }
+    },
+    "phoenix": {
+      "center": [33.4484, -112.0740],
+      "bounds": {
+        "north": 33.7984,
+        "south": 33.0984,
+        "east": -111.7240,
+        "west": -112.4240
+      }
+    },
+    "philadelphia": {
+      "center": [39.9526, -75.1652],
+      "bounds": {
+        "north": 40.1376,
+        "south": 39.8676,
+        "east": -74.9552,
+        "west": -75.2802
+      }
+    },
+    "san_antonio": {
+      "center": [29.4241, -98.4936],
+      "bounds": {
+        "north": 29.7741,
+        "south": 29.0741,
+        "east": -98.1436,
+        "west": -98.8436
+      }
+    },
+    "san_diego": {
+      "center": [32.7157, -117.1611],
+      "bounds": {
+        "north": 33.0657,
+        "south": 32.3657,
+        "east": -116.8111,
+        "west": -117.5111
+      }
+    },
+    "dallas": {
+      "center": [32.7767, -96.7970],
+      "bounds": {
+        "north": 33.1267,
+        "south": 32.4267,
+        "east": -96.4470,
+        "west": -97.1470
+      }
+    },
+    "san_jose": {
+      "center": [37.3382, -121.8863],
+      "bounds": {
+        "north": 37.6882,
+        "south": 36.9882,
+        "east": -121.5363,
+        "west": -122.2363
+      }
+    },
+    "newark": {
+      "center": [40.7357, -74.1724],
+      "bounds": {
+        "north": 40.7857,
+        "south": 40.6857,
+        "east": -74.1224,
+        "west": -74.2224
+      }
+    },
+    "boston": {
+      "center": [42.3601, -71.0589],
+      "bounds": {
+        "north": 42.4101,
+        "south": 42.3101,
+        "east": -71.0089,
+        "west": -71.1089
+      }
+    }
+  },
+  "canada": {
+    "toronto": {
+      "center": [43.6532, -79.3832],
+      "bounds": {
+        "north": 43.8554,
+        "south": 43.5810,
+        "east": -79.1168,
+        "west": -79.6391
+      }
+    },
+    "montreal": {
+      "center": [45.5017, -73.5673],
+      "bounds": {
+        "north": 45.7044,
+        "south": 45.4097,
+        "east": -73.4759,
+        "west": -73.9761
+      }
+    },
+    "vancouver": {
+      "center": [49.2827, -123.1207],
+      "bounds": {
+        "north": 49.3157,
+        "south": 49.2044,
+        "east": -123.0240,
+        "west": -123.2739
+      }
+    },
+    "calgary": {
+      "center": [51.0447, -114.0719],
+      "bounds": {
+        "north": 51.2047,
+        "south": 50.8447,
+        "east": -113.8219,
+        "west": -114.3719
+      }
+    },
+    "edmonton": {
+      "center": [53.5461, -113.4938],
+      "bounds": {
+        "north": 53.7061,
+        "south": 53.3461,
+        "east": -113.2438,
+        "west": -113.7938
+      }
+    },
+    "ottawa": {
+      "center": [45.4215, -75.6972],
+      "bounds": {
+        "north": 45.5315,
+        "south": 45.2715,
+        "east": -75.4472,
+        "west": -75.9472
+      }
+    },
+    "winnipeg": {
+      "center": [49.8951, -97.1384],
+      "bounds": {
+        "north": 50.0551,
+        "south": 49.6851,
+        "east": -96.8884,
+        "west": -97.3884
+      }
+    },
+    "quebec_city": {
+      "center": [46.8139, -71.2080],
+      "bounds": {
+        "north": 46.9739,
+        "south": 46.6139,
+        "east": -70.9580,
+        "west": -71.4580
+      }
+    }
+  },
+  "united_kingdom": {
+    "london": {
+      "center": [51.5074, -0.1278],
+      "bounds": {
+        "north": 51.6919,
+        "south": 51.2867,
+        "east": 0.3340,
+        "west": -0.5103
+      }
+    },
+    "manchester": {
+      "center": [53.4808, -2.2426],
+      "bounds": {
+        "north": 53.5438,
+        "south": 53.4105,
+        "east": -2.1547,
+        "west": -2.3188
+      }
+    },
+    "birmingham": {
+      "center": [52.4862, -1.8904],
+      "bounds": {
+        "north": 52.5690,
+        "south": 52.4022,
+        "east": -1.7308,
+        "west": -2.0159
+      }
+    },
+    "glasgow": {
+      "center": [55.8642, -4.2518],
+      "bounds": {
+        "north": 55.9342,
+        "south": 55.7942,
+        "east": -4.1018,
+        "west": -4.4018
+      }
+    },
+    "liverpool": {
+      "center": [53.4084, -2.9916],
+      "bounds": {
+        "north": 53.4784,
+        "south": 53.3384,
+        "east": -2.8416,
+        "west": -3.1416
+      }
+    },
+    "leeds": {
+      "center": [53.8008, -1.5491],
+      "bounds": {
+        "north": 53.8708,
+        "south": 53.7308,
+        "east": -1.3991,
+        "west": -1.6991
+      }
+    },
+    "sheffield": {
+      "center": [53.3811, -1.4701],
+      "bounds": {
+        "north": 53.4511,
+        "south": 53.3111,
+        "east": -1.3201,
+        "west": -1.6201
+      }
+    },
+    "edinburgh": {
+      "center": [55.9533, -3.1883],
+      "bounds": {
+        "north": 56.0233,
+        "south": 55.8833,
+        "east": -3.0383,
+        "west": -3.3383
+      }
+    }
+  }
+}

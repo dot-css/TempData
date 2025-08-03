@@ -31,8 +31,15 @@ class LocalizationEngine:
     def _load_all_country_data(self) -> None:
         """Load all country data from JSON file"""
         try:
+            # Try comprehensive data first, fallback to original
+            comprehensive_file = self._data_path / "comprehensive_country_data.json"
             country_data_file = self._data_path / "country_data.json"
-            if country_data_file.exists():
+            
+            if comprehensive_file.exists():
+                with open(comprehensive_file, 'r', encoding='utf-8') as f:
+                    self._country_data = json.load(f)
+                    self._loaded_countries = set(self._country_data.keys())
+            elif country_data_file.exists():
                 with open(country_data_file, 'r', encoding='utf-8') as f:
                     self._country_data = json.load(f)
                     self._loaded_countries = set(self._country_data.keys())
