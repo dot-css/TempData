@@ -5,5 +5,22 @@ Contains geographical, business, and template data used by generators
 to create realistic patterns and localized content.
 """
 
-# This module primarily contains data files and loading utilities
-# No direct imports needed as data is loaded by specific components
+from .data_loader import (
+    LazyDataLoader,
+    CountryDataManager,
+    get_data_loader,
+    get_country_manager
+)
+from .template_loader import (
+    TemplateLoader,
+    get_template_loader
+)
+
+__all__ = [
+    'LazyDataLoader',
+    'CountryDataManager', 
+    'get_data_loader',
+    'get_country_manager',
+    'TemplateLoader',
+    'get_template_loader'
+]

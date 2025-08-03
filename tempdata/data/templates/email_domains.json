@@ -1,0 +1,86 @@
+{
+  "business_domains": [
+    "company.com", "corp.com", "inc.com", "ltd.com", "group.com", "solutions.com",
+    "systems.com", "tech.com", "global.com", "international.com", "enterprises.com",
+    "services.com", "consulting.com", "partners.com", "associates.com", "holdings.com",
+    "industries.com", "corporation.com", "business.com", "firm.com", "agency.com",
+    "studio.com", "works.com", "labs.com", "ventures.com", "capital.com", "finance.com",
+    "bank.com", "investment.com", "management.com", "advisory.com", "healthcare.com",
+    "medical.com", "clinic.com", "hospital.com", "wellness.com", "care.com",
+    "retail.com", "shop.com", "store.com", "market.com", "sales.com", "trading.com",
+    "manufacturing.com", "factory.com", "production.com", "industrial.com",
+    "construction.com", "engineering.com", "design.com", "architecture.com",
+    "logistics.com", "transport.com", "shipping.com", "delivery.com", "supply.com"
+  ],
+  "personal_domains": [
+    "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "aol.com", "icloud.com",
+    "protonmail.com", "mail.com", "yandex.com", "zoho.com", "fastmail.com",
+    "tutanota.com", "gmx.com", "live.com", "msn.com", "rediffmail.com",
+    "inbox.com", "email.com", "me.com", "mac.com", "rocketmail.com", "yahoo.co.uk",
+    "yahoo.ca", "yahoo.com.au", "gmail.co.uk", "hotmail.co.uk", "hotmail.ca",
+    "outlook.co.uk", "live.co.uk", "live.ca", "msn.co.uk", "msn.ca"
+  ],
+  "country_specific_domains": {
+    "united_states": [
+      "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "aol.com", "icloud.com",
+      "verizon.net", "comcast.net", "att.net", "sbcglobal.net", "cox.net", "charter.net"
+    ],
+    "united_kingdom": [
+      "gmail.com", "yahoo.co.uk", "hotmail.co.uk", "outlook.co.uk", "live.co.uk",
+      "btinternet.com", "sky.com", "virgin.net", "tiscali.co.uk", "talktalk.net"
+    ],
+    "germany": [
+      "gmail.com", "gmx.de", "web.de", "t-online.de", "yahoo.de", "hotmail.de",
+      "outlook.de", "freenet.de", "arcor.de", "1und1.de"
+    ],
+    "pakistan": [
+      "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "ptcl.net.pk",
+      "cyber.net.pk", "comsats.net.pk", "nayatel.pk", "supernet.com.pk"
+    ],
+    "canada": [
+      "gmail.com", "yahoo.ca", "hotmail.ca", "outlook.ca", "live.ca", "rogers.com",
+      "bell.net", "telus.net", "shaw.ca", "sympatico.ca"
+    ],
+    "australia": [
+      "gmail.com", "yahoo.com.au", "hotmail.com.au", "outlook.com.au", "live.com.au",
+      "bigpond.com", "optusnet.com.au", "tpg.com.au", "iinet.net.au", "westnet.com.au"
+    ],
+    "france": [
+      "gmail.com", "yahoo.fr", "hotmail.fr", "outlook.fr", "live.fr", "orange.fr",
+      "wanadoo.fr", "free.fr", "sfr.fr", "laposte.net"
+    ],
+    "spain": [
+      "gmail.com", "yahoo.es", "hotmail.es", "outlook.es", "live.es", "telefonica.net",
+      "terra.es", "ya.com", "ono.com", "jazztel.es"
+    ],
+    "italy": [
+      "gmail.com", "yahoo.it", "hotmail.it", "outlook.it", "live.it", "libero.it",
+      "virgilio.it", "tiscali.it", "alice.it", "tin.it"
+    ],
+    "japan": [
+      "gmail.com", "yahoo.co.jp", "hotmail.co.jp", "outlook.jp", "live.jp", "nifty.com",
+      "biglobe.ne.jp", "so-net.ne.jp", "ocn.ne.jp", "goo.ne.jp"
+    ]
+  },
+  "domain_patterns": {
+    "business": [
+      "{company_name}.com", "{company_name}.net", "{company_name}.org", "{company_name}.biz",
+      "{company_name}.co", "{company_name}.io", "{company_name}.tech", "{company_name}.pro",
+      "{company_name}corp.com", "{company_name}inc.com", "{company_name}ltd.com",
+      "{company_name}group.com", "{company_name}solutions.com", "{company_name}systems.com"
+    ],
+    "personal": [
+      "{first_name}.{last_name}@{domain}", "{first_name}{last_name}@{domain}",
+      "{first_name}_{last_name}@{domain}", "{first_name}{last_initial}@{domain}",
+      "{first_initial}{last_name}@{domain}", "{first_initial}.{last_name}@{domain}",
+      "{first_name}{birth_year}@{domain}", "{first_name}.{birth_year}@{domain}",
+      "{first_name}{random_number}@{domain}", "{username}@{domain}"
+    ]
+  },
+  "email_prefixes": [
+    "info", "contact", "support", "sales", "admin", "office", "hello", "team",
+    "service", "help", "billing", "accounts", "hr", "careers", "marketing",
+    "press", "media", "legal", "privacy", "security", "feedback", "orders",
+    "shipping", "returns", "customer", "business", "partner", "vendor"
+  ]
+}

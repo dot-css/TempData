@@ -1,0 +1,108 @@
+{
+  "company_names": {
+    "technology": [
+      "TechFlow Solutions", "DataSync Corp", "CloudBridge Technologies", "InnovateTech Systems",
+      "DigitalCore Enterprises", "ByteStream Solutions", "CyberLogic Inc", "NetVision Technologies",
+      "CodeCraft Solutions", "SystemForge Corp", "TechNova Industries", "DataMind Technologies",
+      "CloudSphere Solutions", "IntelliSoft Systems", "QuantumByte Corp", "NexusCode Technologies",
+      "TechPulse Solutions", "DataFlow Enterprises", "CyberEdge Systems", "InnoCore Technologies",
+      "DigitalWave Corp", "SmartLogic Solutions", "TechBridge Industries", "DataVault Systems",
+      "CloudMesh Technologies", "ByteForge Solutions", "NetCore Enterprises", "CodeStream Corp",
+      "TechVision Systems", "DataLink Technologies", "CyberFlow Solutions", "IntelliCore Corp",
+      "QuantumNet Systems", "TechSphere Solutions", "DataCraft Technologies", "CloudLogic Corp",
+      "ByteVision Systems", "NetFlow Technologies", "CodeBridge Solutions", "TechMind Corp"
+    ],
+    "finance": [
+      "Capital Trust Bank", "Premier Financial Group", "Secure Investment Corp", "Global Finance Solutions",
+      "Elite Capital Management", "Prosperity Financial Services", "Sterling Investment Group", "Prime Capital Corp",
+      "Wealth Management Solutions", "Financial Bridge Corp", "Capital Growth Partners", "Secure Banking Solutions",
+      "Premier Investment Group", "Elite Financial Services", "Global Capital Management", "Sterling Finance Corp",
+      "Prosperity Investment Solutions", "Prime Financial Group", "Wealth Capital Partners", "Financial Trust Corp",
+      "Capital Security Bank", "Premier Wealth Management", "Elite Investment Solutions", "Global Financial Corp",
+      "Sterling Capital Group", "Prosperity Banking Services", "Prime Investment Corp", "Wealth Financial Solutions",
+      "Capital Management Group", "Premier Security Bank", "Elite Capital Solutions", "Global Investment Corp",
+      "Sterling Financial Group", "Prosperity Capital Management", "Prime Banking Solutions", "Wealth Investment Corp",
+      "Financial Capital Group", "Premier Investment Solutions", "Elite Banking Corp", "Global Capital Solutions"
+    ],
+    "healthcare": [
+      "MedCare Solutions", "HealthBridge Medical", "Wellness First Corp", "Medical Excellence Group",
+      "CarePoint Healthcare", "LifeLine Medical Services", "HealthTech Solutions", "MedVision Corp",
+      "Wellness Partners Group", "Medical Innovation Corp", "CareFirst Solutions", "HealthCore Medical",
+      "LifeCare Technologies", "MedBridge Healthcare", "Wellness Solutions Corp", "Medical Trust Group",
+      "CareLink Services", "HealthFlow Medical", "LifePoint Solutions", "MedCore Healthcare",
+      "Wellness Bridge Corp", "Medical Care Solutions", "CareVision Group", "HealthLink Medical",
+      "LifeTech Solutions", "MedFlow Healthcare", "Wellness Core Corp", "Medical Bridge Group",
+      "CareStream Solutions", "HealthPoint Medical", "LifeFlow Healthcare", "MedLink Solutions",
+      "Wellness Tech Corp", "Medical Flow Group", "CareCore Solutions", "HealthStream Medical",
+      "LifeBridge Healthcare", "MedPoint Solutions", "Wellness Link Corp", "Medical Stream Group"
+    ],
+    "retail": [
+      "ShopSmart Retail", "MarketPlace Solutions", "RetailEdge Corp", "Consumer Choice Group",
+      "ShopFlow Enterprises", "MarketBridge Retail", "RetailCore Solutions", "Consumer First Corp",
+      "ShopLink Group", "MarketStream Retail", "RetailFlow Solutions", "Consumer Bridge Corp",
+      "ShopCore Enterprises", "MarketPoint Retail", "RetailLink Solutions", "Consumer Flow Group",
+      "ShopBridge Corp", "MarketFlow Retail", "RetailStream Solutions", "Consumer Core Group",
+      "ShopPoint Enterprises", "MarketCore Retail", "RetailBridge Solutions", "Consumer Link Corp",
+      "ShopStream Group", "MarketLink Retail", "RetailPoint Solutions", "Consumer Stream Corp",
+      "ShopFlow Retail", "MarketCore Solutions", "RetailEdge Group", "Consumer Point Corp",
+      "ShopBridge Retail", "MarketStream Solutions", "RetailFlow Group", "Consumer Edge Corp",
+      "ShopCore Retail", "MarketPoint Solutions", "RetailLink Group", "Consumer Flow Corp",
+      "ShopLink Retail", "MarketBridge Solutions", "RetailCore Group", "Consumer Bridge Corp",
+      "ShopPoint Retail", "MarketFlow Solutions", "RetailStream Group", "Consumer Core Corp"
+    ],
+    "manufacturing": [
+      "Industrial Solutions Corp", "Manufacturing Excellence Group", "Production Systems Inc", "Factory Dynamics Corp",
+      "Industrial Bridge Solutions", "Manufacturing Core Group", "Production Flow Corp", "Factory Systems Inc",
+      "Industrial Stream Solutions", "Manufacturing Link Group", "Production Bridge Corp", "Factory Flow Inc",
+      "Industrial Core Solutions", "Manufacturing Stream Group", "Production Point Corp", "Factory Bridge Inc",
+      "Industrial Flow Solutions", "Manufacturing Point Group", "Production Core Corp", "Factory Stream Inc",
+      "Industrial Link Solutions", "Manufacturing Flow Group", "Production Stream Corp", "Factory Core Inc",
+      "Industrial Point Solutions", "Manufacturing Bridge Group", "Production Link Corp", "Factory Point Inc",
+      "Industrial Edge Solutions", "Manufacturing Edge Group", "Production Edge Corp", "Factory Edge Inc",
+      "Industrial Tech Solutions", "Manufacturing Tech Group", "Production Tech Corp", "Factory Tech Inc",
+      "Industrial Pro Solutions", "Manufacturing Pro Group", "Production Pro Corp", "Factory Pro Inc",
+      "Industrial Max Solutions", "Manufacturing Max Group", "Production Max Corp", "Factory Max Inc",
+      "Industrial Prime Solutions", "Manufacturing Prime Group", "Production Prime Corp", "Factory Prime Inc"
+    ],
+    "consulting": [
+      "Strategic Consulting Group", "Business Solutions Corp", "Advisory Partners Inc", "Consulting Excellence Group",
+      "Strategic Bridge Solutions", "Business Core Consulting", "Advisory Flow Corp", "Consulting Systems Inc",
+      "Strategic Stream Solutions", "Business Link Consulting", "Advisory Bridge Corp", "Consulting Flow Inc",
+      "Strategic Core Solutions", "Business Stream Consulting", "Advisory Point Corp", "Consulting Bridge Inc",
+      "Strategic Flow Solutions", "Business Point Consulting", "Advisory Core Corp", "Consulting Stream Inc",
+      "Strategic Link Solutions", "Business Flow Consulting", "Advisory Stream Corp", "Consulting Core Inc",
+      "Strategic Point Solutions", "Business Bridge Consulting", "Advisory Link Corp", "Consulting Point Inc",
+      "Strategic Edge Solutions", "Business Edge Consulting", "Advisory Edge Corp", "Consulting Edge Inc",
+      "Strategic Tech Solutions", "Business Tech Consulting", "Advisory Tech Corp", "Consulting Tech Inc",
+      "Strategic Pro Solutions", "Business Pro Consulting", "Advisory Pro Corp", "Consulting Pro Inc",
+      "Strategic Max Solutions", "Business Max Consulting", "Advisory Max Corp", "Consulting Max Inc",
+      "Strategic Prime Solutions", "Business Prime Consulting", "Advisory Prime Corp", "Consulting Prime Inc"
+    ]
+  },
+  "company_suffixes": [
+    "Inc", "Corp", "LLC", "Ltd", "Group", "Solutions", "Systems", "Technologies", "Enterprises",
+    "Services", "Partners", "Associates", "Holdings", "Industries", "Corporation", "Company",
+    "International", "Global", "Worldwide", "United", "Advanced", "Premier", "Elite", "Pro"
+  ],
+  "industries": [
+    "Technology", "Finance", "Healthcare", "Retail", "Manufacturing", "Consulting", "Education",
+    "Real Estate", "Transportation", "Energy", "Telecommunications", "Media", "Entertainment",
+    "Hospitality", "Food & Beverage", "Automotive", "Aerospace", "Construction", "Agriculture",
+    "Pharmaceuticals", "Biotechnology", "Insurance", "Banking", "Investment", "Legal Services",
+    "Marketing", "Advertising", "Public Relations", "Human Resources", "Logistics", "Supply Chain",
+    "E-commerce", "Software", "Hardware", "Networking", "Security", "Cloud Computing", "AI/ML",
+    "Data Analytics", "Digital Marketing", "Social Media", "Gaming", "Sports", "Fashion",
+    "Beauty", "Jewelry", "Home & Garden", "Electronics", "Appliances", "Furniture", "Textiles"
+  ],
+  "business_types": [
+    "Startup", "Small Business", "Medium Enterprise", "Large Corporation", "Multinational",
+    "Public Company", "Private Company", "Partnership", "Sole Proprietorship", "Non-Profit",
+    "Government", "Cooperative", "Franchise", "Joint Venture", "Subsidiary", "Holding Company"
+  ],
+  "departments": [
+    "Human Resources", "Finance", "Marketing", "Sales", "Operations", "IT", "Legal",
+    "Customer Service", "Research & Development", "Quality Assurance", "Supply Chain",
+    "Procurement", "Business Development", "Strategy", "Communications", "Public Relations",
+    "Training", "Compliance", "Risk Management", "Internal Audit", "Facilities", "Security"
+  ]
+}

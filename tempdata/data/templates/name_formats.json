@@ -1,0 +1,158 @@
+{
+  "name_patterns": {
+    "business": [
+      "{adjective} {noun}",
+      "{adjective} {noun} {suffix}",
+      "{noun} {suffix}",
+      "{founder_name} {suffix}",
+      "{location} {noun}",
+      "{industry} {noun}",
+      "{adjective} {industry} {suffix}",
+      "{noun} & {noun}",
+      "{adjective} {noun} & {noun}",
+      "{initials} {suffix}"
+    ],
+    "product": [
+      "{adjective} {noun}",
+      "{brand} {noun}",
+      "{noun} {version}",
+      "{adjective} {noun} {version}",
+      "{brand} {adjective} {noun}",
+      "{noun} {model}",
+      "{series} {noun}",
+      "{brand} {series}",
+      "{adjective} {series}",
+      "{noun} {edition}"
+    ],
+    "person": [
+      "{first_name} {last_name}",
+      "{title} {first_name} {last_name}",
+      "{first_name} {middle_initial} {last_name}",
+      "{first_name} {middle_name} {last_name}",
+      "{title} {first_name} {middle_initial} {last_name}",
+      "{first_name} {last_name} {suffix}",
+      "{title} {first_name} {last_name} {suffix}"
+    ]
+  },
+  "business_adjectives": [
+    "Advanced", "Premier", "Elite", "Pro", "Smart", "Global", "Dynamic", "Innovative",
+    "Strategic", "Optimal", "Superior", "Ultimate", "Prime", "Expert", "Professional",
+    "Reliable", "Trusted", "Quality", "Efficient", "Effective", "Powerful", "Robust",
+    "Secure", "Fast", "Quick", "Instant", "Modern", "Digital", "Tech", "Cyber",
+    "Virtual", "Cloud", "Mobile", "Wireless", "Automated", "Intelligent", "Adaptive",
+    "Flexible", "Scalable", "Integrated", "Comprehensive", "Complete", "Total",
+    "Universal", "Multi", "Cross", "Inter", "Trans", "Meta", "Ultra", "Super",
+    "Mega", "Macro", "Micro", "Mini", "Compact", "Portable", "Lightweight", "Heavy",
+    "Industrial", "Commercial", "Enterprise", "Business", "Corporate", "Executive",
+    "Management", "Administrative", "Operational", "Functional", "Practical", "Applied",
+    "Specialized", "Custom", "Tailored", "Personalized", "Individual", "Unique",
+    "Exclusive", "Premium", "Luxury", "Deluxe", "Standard", "Basic", "Essential",
+    "Core", "Central", "Main", "Primary", "Principal", "Leading", "Top", "Best",
+    "Finest", "Highest", "Maximum", "Optimal", "Perfect", "Ideal", "Model", "Classic"
+  ],
+  "business_nouns": [
+    "Solutions", "Systems", "Technologies", "Services", "Consulting", "Partners",
+    "Associates", "Group", "Corporation", "Company", "Enterprises", "Industries",
+    "Holdings", "Ventures", "Capital", "Management", "Development", "Innovation",
+    "Research", "Analytics", "Intelligence", "Insights", "Strategy", "Operations",
+    "Performance", "Excellence", "Quality", "Efficiency", "Productivity", "Growth",
+    "Success", "Achievement", "Results", "Outcomes", "Impact", "Value", "Benefits",
+    "Advantages", "Opportunities", "Potential", "Capabilities", "Resources", "Assets",
+    "Infrastructure", "Platform", "Framework", "Architecture", "Design", "Engineering",
+    "Construction", "Manufacturing", "Production", "Assembly", "Processing", "Distribution",
+    "Logistics", "Supply", "Chain", "Network", "Connection", "Link", "Bridge", "Gateway",
+    "Portal", "Interface", "Integration", "Synchronization", "Coordination", "Collaboration",
+    "Communication", "Information", "Data", "Knowledge", "Expertise", "Skills", "Talent",
+    "Team", "Staff", "Personnel", "Workforce", "Human", "Resources", "Capital", "Investment",
+    "Finance", "Banking", "Credit", "Funding", "Revenue", "Profit", "Income", "Earnings",
+    "Sales", "Marketing", "Advertising", "Promotion", "Brand", "Image", "Reputation",
+    "Trust", "Reliability", "Security", "Safety", "Protection", "Defense", "Shield",
+    "Guard", "Watch", "Monitor", "Control", "Command", "Authority", "Power", "Force",
+    "Energy", "Fuel", "Drive", "Motion", "Movement", "Flow", "Stream", "Current",
+    "Wave", "Pulse", "Signal", "Transmission", "Communication", "Message", "Content"
+  ],
+  "product_adjectives": [
+    "Smart", "Intelligent", "Advanced", "Pro", "Premium", "Deluxe", "Ultra", "Super",
+    "Mega", "Max", "Plus", "Extra", "Special", "Limited", "Exclusive", "Signature",
+    "Classic", "Vintage", "Retro", "Modern", "Contemporary", "Futuristic", "Next-Gen",
+    "High-Tech", "Digital", "Electronic", "Wireless", "Portable", "Compact", "Mini",
+    "Micro", "Nano", "Jumbo", "Giant", "Large", "Small", "Tiny", "Lightweight",
+    "Heavy-Duty", "Industrial", "Commercial", "Professional", "Consumer", "Personal",
+    "Home", "Office", "Business", "Enterprise", "Universal", "Multi-Purpose",
+    "All-in-One", "Complete", "Total", "Full", "Partial", "Basic", "Standard",
+    "Enhanced", "Improved", "Upgraded", "New", "Latest", "Updated", "Revised",
+    "Modified", "Custom", "Personalized", "Tailored", "Specialized", "Dedicated",
+    "Focused", "Targeted", "Specific", "General", "Universal", "Global", "Local",
+    "Regional", "National", "International", "Worldwide", "Domestic", "Foreign",
+    "Import", "Export", "Original", "Authentic", "Genuine", "Real", "True",
+    "Pure", "Natural", "Organic", "Eco-Friendly", "Green", "Sustainable", "Renewable"
+  ],
+  "product_nouns": [
+    "System", "Device", "Tool", "Instrument", "Equipment", "Machine", "Appliance",
+    "Gadget", "Widget", "Component", "Part", "Element", "Unit", "Module", "Assembly",
+    "Kit", "Set", "Collection", "Series", "Line", "Range", "Family", "Group",
+    "Package", "Bundle", "Suite", "Solution", "Platform", "Framework", "Interface",
+    "Application", "Software", "Program", "App", "Service", "Feature", "Function",
+    "Capability", "Option", "Choice", "Alternative", "Variant", "Version", "Model",
+    "Type", "Style", "Design", "Pattern", "Template", "Format", "Structure",
+    "Configuration", "Setup", "Installation", "Implementation", "Deployment", "Launch",
+    "Release", "Edition", "Issue", "Volume", "Chapter", "Section", "Part", "Piece",
+    "Item", "Product", "Article", "Object", "Thing", "Stuff", "Material", "Substance",
+    "Content", "Data", "Information", "Knowledge", "Intelligence", "Insight", "Analysis",
+    "Report", "Study", "Research", "Investigation", "Examination", "Review", "Assessment",
+    "Evaluation", "Test", "Trial", "Experiment", "Sample", "Example", "Instance",
+    "Case", "Scenario", "Situation", "Condition", "State", "Status", "Position",
+    "Location", "Place", "Spot", "Point", "Area", "Zone", "Region", "Territory",
+    "Domain", "Field", "Sector", "Industry", "Market", "Segment", "Category", "Class"
+  ],
+  "versions": [
+    "1.0", "2.0", "3.0", "Pro", "Plus", "Max", "Ultra", "Premium", "Deluxe",
+    "Standard", "Basic", "Lite", "Mini", "Micro", "XL", "XXL", "HD", "4K",
+    "Advanced", "Professional", "Enterprise", "Business", "Home", "Personal",
+    "Student", "Educational", "Commercial", "Industrial", "Mobile", "Desktop",
+    "Web", "Cloud", "Online", "Offline", "Portable", "Wireless", "Bluetooth",
+    "WiFi", "Smart", "AI", "Auto", "Manual", "Digital", "Analog", "Electric",
+    "Solar", "Battery", "Rechargeable", "Disposable", "Reusable", "Eco"
+  ],
+  "models": [
+    "A1", "B2", "C3", "X1", "Y2", "Z3", "Alpha", "Beta", "Gamma", "Delta",
+    "Omega", "Prime", "Elite", "Pro", "Max", "Ultra", "Super", "Mega", "Turbo",
+    "Sport", "Classic", "Vintage", "Modern", "Future", "Next", "New", "Latest",
+    "Updated", "Revised", "Enhanced", "Improved", "Advanced", "Premium", "Deluxe",
+    "Standard", "Basic", "Lite", "Mini", "Compact", "Portable", "Mobile", "Desktop",
+    "Home", "Office", "Business", "Professional", "Commercial", "Industrial"
+  ],
+  "series": [
+    "Alpha Series", "Beta Series", "Gamma Series", "Delta Series", "Omega Series",
+    "Pro Series", "Max Series", "Ultra Series", "Super Series", "Mega Series",
+    "Prime Series", "Elite Series", "Premium Series", "Deluxe Series", "Standard Series",
+    "Basic Series", "Lite Series", "Mini Series", "Compact Series", "Portable Series",
+    "Mobile Series", "Desktop Series", "Home Series", "Office Series", "Business Series",
+    "Professional Series", "Commercial Series", "Industrial Series", "Enterprise Series",
+    "Consumer Series", "Personal Series", "Student Series", "Educational Series"
+  ],
+  "editions": [
+    "Standard Edition", "Premium Edition", "Deluxe Edition", "Ultimate Edition",
+    "Professional Edition", "Enterprise Edition", "Business Edition", "Home Edition",
+    "Personal Edition", "Student Edition", "Educational Edition", "Commercial Edition",
+    "Industrial Edition", "Mobile Edition", "Desktop Edition", "Web Edition",
+    "Cloud Edition", "Online Edition", "Offline Edition", "Portable Edition",
+    "Wireless Edition", "Bluetooth Edition", "WiFi Edition", "Smart Edition",
+    "AI Edition", "Auto Edition", "Manual Edition", "Digital Edition", "Analog Edition",
+    "Electric Edition", "Solar Edition", "Battery Edition", "Rechargeable Edition",
+    "Disposable Edition", "Reusable Edition", "Eco Edition", "Green Edition",
+    "Sustainable Edition", "Renewable Edition", "Organic Edition", "Natural Edition"
+  ],
+  "titles": [
+    "Mr.", "Mrs.", "Ms.", "Miss", "Dr.", "Prof.", "Rev.", "Hon.", "Sir", "Madam",
+    "Captain", "Colonel", "Major", "General", "Admiral", "Commander", "Lieutenant",
+    "Sergeant", "Corporal", "Private", "Officer", "Detective", "Inspector", "Chief",
+    "Director", "Manager", "Supervisor", "Coordinator", "Administrator", "Executive",
+    "President", "Vice President", "CEO", "CFO", "CTO", "COO", "CIO", "CMO"
+  ],
+  "suffixes": [
+    "Jr.", "Sr.", "II", "III", "IV", "V", "PhD", "MD", "JD", "MBA", "MA", "MS",
+    "BS", "BA", "BSc", "MSc", "PE", "CPA", "RN", "DDS", "DVM", "PharmD", "PsyD",
+    "EdD", "ThD", "ScD", "EngD", "DNP", "DPT", "OTD", "AuD", "PodD", "OptD"
+  ]
+}

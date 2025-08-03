@@ -1,0 +1,90 @@
+{
+  "products": {
+    "technology": [
+      "Cloud Storage Solution", "Data Analytics Platform", "Mobile App Framework", "AI Assistant Software",
+      "Cybersecurity Suite", "Database Management System", "Web Development Tools", "API Gateway",
+      "Machine Learning Platform", "IoT Device Manager", "Blockchain Solution", "VR Headset",
+      "Smart Watch", "Wireless Earbuds", "Gaming Laptop", "Tablet Computer", "Smartphone",
+      "Desktop Computer", "Server Hardware", "Network Router", "Security Camera", "Smart Speaker",
+      "Fitness Tracker", "Drone", "3D Printer", "External Hard Drive", "USB Flash Drive",
+      "Wireless Charger", "Bluetooth Speaker", "Webcam", "Microphone", "Keyboard", "Mouse",
+      "Monitor", "Projector", "Scanner", "Printer", "Graphics Card", "Processor", "Memory Module"
+    ],
+    "healthcare": [
+      "Blood Pressure Monitor", "Digital Thermometer", "Pulse Oximeter", "Glucose Meter",
+      "Stethoscope", "Surgical Mask", "Hand Sanitizer", "Medical Gloves", "Bandages",
+      "First Aid Kit", "Wheelchair", "Walking Cane", "Hospital Bed", "IV Stand",
+      "Defibrillator", "X-Ray Machine", "MRI Scanner", "Ultrasound Device", "ECG Machine",
+      "Ventilator", "Oxygen Concentrator", "Nebulizer", "Insulin Pen", "Syringe",
+      "Medical Scale", "Examination Table", "Surgical Instruments", "Dental Tools",
+      "Eye Chart", "Hearing Aid", "Prosthetic Limb", "Orthotic Device", "Medical Software",
+      "Patient Monitor", "Infusion Pump", "Dialysis Machine", "Anesthesia Machine",
+      "Surgical Light", "Operating Table", "Medical Refrigerator"
+    ],
+    "retail": [
+      "Running Shoes", "Casual Sneakers", "Dress Shoes", "Boots", "Sandals", "T-Shirt",
+      "Jeans", "Dress", "Jacket", "Sweater", "Backpack", "Handbag", "Wallet", "Watch",
+      "Sunglasses", "Hat", "Scarf", "Gloves", "Belt", "Jewelry", "Perfume", "Makeup",
+      "Skincare Product", "Shampoo", "Toothbrush", "Toothpaste", "Soap", "Towel",
+      "Bed Sheets", "Pillow", "Blanket", "Curtains", "Lamp", "Candle", "Picture Frame",
+      "Vase", "Plant Pot", "Garden Tools", "Cleaning Supplies", "Kitchen Utensils",
+      "Cookware", "Dinnerware", "Glassware", "Small Appliances", "Home Decor"
+    ],
+    "automotive": [
+      "Sedan", "SUV", "Truck", "Convertible", "Hatchback", "Coupe", "Minivan", "Motorcycle",
+      "Electric Vehicle", "Hybrid Car", "Luxury Car", "Sports Car", "Compact Car",
+      "Engine Oil", "Brake Pads", "Tires", "Battery", "Air Filter", "Spark Plugs",
+      "Windshield Wipers", "Headlights", "Tail Lights", "Side Mirrors", "Seat Covers",
+      "Floor Mats", "Car Charger", "GPS Navigator", "Dash Camera", "Car Audio System",
+      "Steering Wheel Cover", "Sunshade", "Car Vacuum", "Jump Starter", "Tool Kit",
+      "Emergency Kit", "Car Wash Kit", "Wax", "Polish", "Tire Pressure Gauge"
+    ],
+    "food_beverage": [
+      "Organic Coffee", "Green Tea", "Energy Drink", "Fruit Juice", "Sparkling Water",
+      "Protein Bar", "Granola", "Yogurt", "Cheese", "Milk", "Bread", "Pasta", "Rice",
+      "Olive Oil", "Honey", "Jam", "Peanut Butter", "Cereal", "Oatmeal", "Soup",
+      "Frozen Pizza", "Ice Cream", "Chocolate", "Cookies", "Crackers", "Chips", "Nuts",
+      "Dried Fruit", "Canned Vegetables", "Frozen Vegetables", "Fresh Fruit", "Meat",
+      "Fish", "Chicken", "Eggs", "Butter", "Sugar", "Salt", "Pepper", "Spices"
+    ],
+    "home_garden": [
+      "Sofa", "Dining Table", "Bed Frame", "Mattress", "Dresser", "Bookshelf", "Desk",
+      "Office Chair", "Coffee Table", "TV Stand", "Wardrobe", "Nightstand", "Mirror",
+      "Rug", "Curtains", "Blinds", "Lighting Fixture", "Ceiling Fan", "Air Conditioner",
+      "Heater", "Humidifier", "Dehumidifier", "Vacuum Cleaner", "Washing Machine",
+      "Dryer", "Dishwasher", "Refrigerator", "Microwave", "Oven", "Stove", "Blender",
+      "Coffee Maker", "Toaster", "Garden Hose", "Lawn Mower", "Trimmer", "Fertilizer",
+      "Seeds", "Plant Food", "Garden Tools", "Outdoor Furniture", "Grill", "Fire Pit"
+    ]
+  },
+  "product_categories": [
+    "Electronics", "Clothing", "Home & Garden", "Health & Beauty", "Sports & Outdoors",
+    "Automotive", "Books", "Music", "Movies", "Games", "Toys", "Baby", "Pet Supplies",
+    "Food & Beverage", "Office Supplies", "Industrial", "Tools", "Hardware", "Software"
+  ],
+  "product_attributes": {
+    "colors": [
+      "Black", "White", "Gray", "Silver", "Blue", "Red", "Green", "Yellow", "Orange",
+      "Purple", "Pink", "Brown", "Beige", "Navy", "Maroon", "Teal", "Gold", "Rose Gold"
+    ],
+    "sizes": [
+      "XS", "S", "M", "L", "XL", "XXL", "XXXL", "One Size", "Small", "Medium", "Large",
+      "Extra Large", "Compact", "Standard", "Premium", "Deluxe", "Mini", "Jumbo"
+    ],
+    "materials": [
+      "Cotton", "Polyester", "Leather", "Plastic", "Metal", "Wood", "Glass", "Ceramic",
+      "Rubber", "Silicone", "Stainless Steel", "Aluminum", "Carbon Fiber", "Bamboo",
+      "Organic", "Recycled", "Eco-Friendly", "Waterproof", "Breathable", "Durable"
+    ],
+    "brands": [
+      "TechPro", "SmartChoice", "EcoFriendly", "Premium Plus", "ValueMax", "QualityFirst",
+      "InnovateBrand", "TrustMark", "EliteChoice", "ProSeries", "MaxValue", "PrimeBrand",
+      "TopTier", "BestChoice", "SuperiorQuality", "UltimateBrand", "MasterCraft",
+      "ExpertChoice", "ProfessionalGrade", "CommercialQuality"
+    ]
+  },
+  "pricing_tiers": [
+    "Budget", "Economy", "Standard", "Premium", "Luxury", "Enterprise", "Professional",
+    "Consumer", "Commercial", "Industrial"
+  ]
+}
