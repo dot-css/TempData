@@ -180,11 +180,21 @@ class SocialMediaGenerator(BaseGenerator):
         
         Args:
             rows: Number of posts to generate
-            **kwargs: Additional parameters (platform, date_range, etc.)
+            **kwargs: Additional parameters (platform, date_range, time_series, etc.)
             
         Returns:
             pd.DataFrame: Generated social media data with realistic patterns
         """
+        # Check if time series generation is requested
+        ts_config = self._create_time_series_config(**kwargs)
+        
+        if ts_config:
+            return self._generate_time_series_social_media(rows, ts_config, **kwargs)
+        else:
+            return self._generate_snapshot_social_media(rows, **kwargs)
+    
+    def _generate_snapshot_social_media(self, rows: int, **kwargs) -> pd.DataFrame:
+        """Generate snapshot social media data (random post times)"""
         platform_filter = kwargs.get('platform', None)
         date_range = kwargs.get('date_range', None)
         include_viral = kwargs.get('include_viral', True)
@@ -249,6 +259,10 @@ class SocialMediaGenerator(BaseGenerator):
         
         df = pd.DataFrame(data)
         return self._apply_realistic_patterns(df)
+    
+    def _generate_time_series_social_media(self, rows: int, ts_config, **kwargs) -> pd.DataFrame:
+        """Generate time series social media data using integrated time series system"""
+        platform_filter = kwargs.get('platform', None)
     
     def _select_platform(self) -> str:
         """Select platform based on realistic usage distributions"""

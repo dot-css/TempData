@@ -197,7 +197,16 @@ class WebAnalyticsGenerator(BaseGenerator):
         Returns:
             pd.DataFrame: Generated web analytics data with realistic patterns
         """
-        time_series = kwargs.get('time_series', False)
+        # Create time series configuration if requested
+        ts_config = self._create_time_series_config(**kwargs)
+        
+        if ts_config:
+            return self._generate_time_series_analytics(rows, ts_config, **kwargs)
+        else:
+            return self._generate_snapshot_analytics(rows, **kwargs)
+    
+    def _generate_snapshot_analytics(self, rows: int, **kwargs) -> pd.DataFrame:
+        """Generate snapshot web analytics data (random timestamps)"""
         date_range = kwargs.get('date_range', None)
         
         data = []
@@ -205,7 +214,7 @@ class WebAnalyticsGenerator(BaseGenerator):
         
         # Generate page views to reach exact row count
         while len(data) < rows:
-            session_data = self._generate_session(session_counter, date_range, time_series)
+            session_data = self._generate_session(session_counter, date_range, False)
             
             # Calculate how many pages this session should have
             remaining_rows = rows - len(data)
@@ -224,6 +233,137 @@ class WebAnalyticsGenerator(BaseGenerator):
         
         df = pd.DataFrame(data)
         return self._apply_realistic_patterns(df)
+    
+    def _generate_time_series_analytics(self, rows: int, ts_config, **kwargs) -> pd.DataFrame:
+        """Generate time series web analytics data using integrated time series system"""
+        # Generate timestamps from time series config
+        timestamps = self._generate_time_series_timestamps(ts_config, rows)
+        
+        data = []
+        session_counter = 1
+        
+        # Generate base time series for key metrics
+        base_sessions = self.time_series_generator.generate_time_series_base(
+            ts_config, base_value=100.0, value_range=(10.0, 1000.0)
+        )
+        
+        # Create session distribution based on time series patterns
+        for i, timestamp in enumerate(timestamps):
+            if i >= rows:
+                break
+                
+            # Use time series value to influence session characteristics
+            ts_multiplier = base_sessions.iloc[i % len(base_sessions)]['value'] / 100.0
+            
+            # Generate session with time-aware characteristics
+            session_data = self._generate_time_aware_session(
+                session_counter, timestamp, ts_multiplier
+            )
+            
+            # Generate page view for this timestamp
+            page_view = self._generate_page_view(session_data, 0, 1)
+            page_view['timestamp'] = timestamp
+            
+            data.append(page_view)
+            session_counter += 1
+        
+        df = pd.DataFrame(data)
+        
+        # Apply time series correlations to key metrics
+        df = self._apply_time_series_correlation(df, ts_config, 'time_on_page_seconds')
+        df = self._apply_time_series_correlation(df, ts_config, 'scroll_depth_percent')
+        
+        # Add temporal relationships
+        df = self._add_temporal_relationships(df, ts_config)
+        
+        return self._apply_realistic_patterns(df)
+    
+    def _generate_time_aware_session(self, session_id: int, timestamp: datetime, 
+                                   ts_multiplier: float) -> Dict[str, Any]:
+        """Generate session data with time-aware characteristics"""
+        # Apply time-of-day effects
+        hour = timestamp.hour
+        day_of_week = timestamp.weekday()
+        
+        # Business hours effect (9 AM - 5 PM weekdays)
+        if 9 <= hour <= 17 and day_of_week < 5:
+            device_bias = {'desktop': 1.5, 'mobile': 0.7, 'tablet': 0.8}
+            traffic_bias = {'organic_search': 1.2, 'direct': 1.3, 'social_media': 0.8}
+        else:
+            device_bias = {'desktop': 0.8, 'mobile': 1.3, 'tablet': 1.1}
+            traffic_bias = {'organic_search': 0.9, 'direct': 1.1, 'social_media': 1.4}
+        
+        # Weekend effect
+        if day_of_week >= 5:
+            device_bias['mobile'] *= 1.2
+            traffic_bias['social_media'] *= 1.3
+        
+        # Select device type with time bias
+        device_probs = []
+        for device in self.device_data.keys():
+            base_prob = self.device_data[device]['probability']
+            adjusted_prob = base_prob * device_bias.get(device, 1.0) * ts_multiplier
+            device_probs.append(adjusted_prob)
+        
+        # Normalize probabilities
+        total_prob = sum(device_probs)
+        device_probs = [p / total_prob for p in device_probs]
+        
+        device_type = self._select_weighted_choice(
+            list(self.device_data.keys()), device_probs
+        )
+        device_info = self.device_data[device_type]
+        
+        # Select traffic source with time bias
+        traffic_probs = []
+        for source in self.traffic_sources.keys():
+            base_prob = self.traffic_sources[source]['probability']
+            adjusted_prob = base_prob * traffic_bias.get(source, 1.0)
+            traffic_probs.append(adjusted_prob)
+        
+        # Normalize probabilities
+        total_prob = sum(traffic_probs)
+        traffic_probs = [p / total_prob for p in traffic_probs]
+        
+        traffic_source = self._select_weighted_choice(
+            list(self.traffic_sources.keys()), traffic_probs
+        )
+        source_info = self.traffic_sources[traffic_source]
+        
+        # Select user segment (less time-dependent)
+        user_segment = self._select_weighted_choice(
+            list(self.user_segments.keys()),
+            [self.user_segments[s]['probability'] for s in self.user_segments.keys()]
+        )
+        segment_info = self.user_segments[user_segment]
+        
+        # Calculate session characteristics with time series influence
+        base_duration = device_info['avg_session_duration']
+        session_duration = max(10, int(base_duration * segment_info['session_duration_multiplier'] * 
+                                     ts_multiplier * self.faker.random.gauss(1.0, 0.3)))
+        
+        # Generate browser and other details
+        browser = self._select_weighted_choice(
+            device_info['browsers'], device_info['browser_weights']
+        )
+        
+        screen_resolution = self.faker.random_element(device_info['screen_resolutions'])
+        
+        return {
+            'session_id': f'SES_{session_id:08d}',
+            'user_id': f'USR_{self.faker.random_int(1, 100000):06d}',
+            'device_type': device_type,
+            'browser': browser,
+            'screen_resolution': screen_resolution,
+            'user_segment': user_segment,
+            'traffic_source': traffic_source,
+            'session_start': timestamp,
+            'session_duration': session_duration,
+            'pages_per_session': 1,  # Single page for time series
+            'device_info': device_info,
+            'segment_info': segment_info,
+            'source_info': source_info
+        }
     
     def _generate_session(self, session_id: int, date_range: Tuple = None, 
                          time_series: bool = False) -> Dict[str, Any]:

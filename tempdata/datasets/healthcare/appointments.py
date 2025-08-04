@@ -241,11 +241,21 @@ class AppointmentGenerator(BaseGenerator):
         
         Args:
             rows: Number of appointments to generate
-            **kwargs: Additional parameters (date_range, patient_pool_size, etc.)
+            **kwargs: Additional parameters (date_range, patient_pool_size, time_series, etc.)
             
         Returns:
             pd.DataFrame: Generated appointment data with realistic patterns
         """
+        # Check if time series generation is requested
+        ts_config = self._create_time_series_config(**kwargs)
+        
+        if ts_config:
+            return self._generate_time_series_appointments(rows, ts_config, **kwargs)
+        else:
+            return self._generate_snapshot_appointments(rows, **kwargs)
+    
+    def _generate_snapshot_appointments(self, rows: int, **kwargs) -> pd.DataFrame:
+        """Generate snapshot appointment data (random appointment dates)"""
         date_range = kwargs.get('date_range', None)
         patient_pool_size = kwargs.get('patient_pool_size', 5000)
         include_historical = kwargs.get('include_historical', True)
@@ -327,6 +337,277 @@ class AppointmentGenerator(BaseGenerator):
         
         return self._apply_realistic_patterns(df)
     
+    def _generate_time_series_appointments(self, rows: int, ts_config, **kwargs) -> pd.DataFrame:
+        """Generate time series appointment data with temporal scheduling patterns"""
+        patient_pool_size = kwargs.get('patient_pool_size', 5000)
+        
+        # Generate timestamps from time series config
+        timestamps = self._generate_time_series_timestamps(ts_config, rows)
+        
+        data = []
+        
+        # Track appointment scheduling patterns over time
+        daily_appointment_counts = {}
+        doctor_schedules = {}
+        
+        for i, timestamp in enumerate(timestamps):
+            if i >= rows:
+                break
+                
+            # Convert timestamp to date for appointment scheduling
+            appointment_date = timestamp.date()
+            
+            # Ensure it's a valid business day
+            appointment_date = self._adjust_to_business_day(appointment_date)
+            
+            # Apply seasonal patterns to appointment type selection
+            appointment_type = self._select_seasonal_appointment_type(appointment_date)
+            type_info = self.appointment_types[appointment_type]
+            
+            # Select urgency level (time series may have different patterns)
+            urgency = self._select_urgency_level_for_time_series(appointment_date)
+            
+            # Select appropriate doctor for the appointment type
+            doctor = self._select_doctor_for_appointment(type_info['specialty'])
+            
+            # Generate appointment time with realistic scheduling constraints
+            appointment_time = self._select_appointment_time_with_constraints(
+                appointment_date, doctor, daily_appointment_counts, doctor_schedules
+            )
+            
+            # Generate patient ID
+            patient_id = f'PAT_{self.faker.random_int(1, patient_pool_size):06d}'
+            
+            # Generate appointment status based on date
+            status = self._select_appointment_status(appointment_date)
+            
+            # Calculate actual duration (may include overtime)
+            scheduled_duration = type_info['duration']
+            actual_duration = self._calculate_actual_duration(scheduled_duration, status)
+            
+            # Generate additional appointment details
+            appointment_details = self._generate_appointment_details(
+                appointment_type, urgency, status, appointment_date
+            )
+            
+            # Generate room assignment
+            room_number = self._generate_room_assignment(type_info['specialty'])
+            
+            # Generate insurance and billing information
+            billing_info = self._generate_billing_info(appointment_type, status)
+            
+            appointment = {
+                'appointment_id': f'APT_{i+1:06d}',
+                'patient_id': patient_id,
+                'doctor_id': doctor['doctor_id'],
+                'doctor_name': doctor['name'],
+                'specialty': doctor['specialty'],
+                'appointment_date': appointment_date,
+                'appointment_time': appointment_time,
+                'appointment_type': appointment_type,
+                'urgency_level': urgency,
+                'scheduled_duration_minutes': scheduled_duration,
+                'actual_duration_minutes': actual_duration,
+                'status': status,
+                'room_number': room_number,
+                'chief_complaint': appointment_details['chief_complaint'],
+                'notes': appointment_details['notes'],
+                'follow_up_needed': appointment_details['follow_up_needed'],
+                'follow_up_weeks': appointment_details['follow_up_weeks'],
+                'billing_code': billing_info['code'],
+                'billing_amount': billing_info['amount'],
+                'insurance_covered': billing_info['insurance_covered'],
+                'copay_amount': billing_info['copay'],
+                'created_date': appointment_details['created_date'],
+                'last_modified': appointment_details['last_modified']
+            }
+            
+            # Track scheduling for realistic constraints
+            date_key = appointment_date
+            if date_key not in daily_appointment_counts:
+                daily_appointment_counts[date_key] = {}
+            if doctor['doctor_id'] not in daily_appointment_counts[date_key]:
+                daily_appointment_counts[date_key][doctor['doctor_id']] = 0
+            daily_appointment_counts[date_key][doctor['doctor_id']] += 1
+            
+            # Track doctor schedules
+            if doctor['doctor_id'] not in doctor_schedules:
+                doctor_schedules[doctor['doctor_id']] = {}
+            if date_key not in doctor_schedules[doctor['doctor_id']]:
+                doctor_schedules[doctor['doctor_id']][date_key] = []
+            doctor_schedules[doctor['doctor_id']][date_key].append(appointment_time)
+            
+            data.append(appointment)
+        
+        df = pd.DataFrame(data)
+        
+        # Convert date and time columns to proper types
+        df['appointment_date'] = pd.to_datetime(df['appointment_date']).dt.date
+        df['appointment_time'] = pd.to_datetime(df['appointment_time'], format='%H:%M:%S').dt.time
+        df['created_date'] = pd.to_datetime(df['created_date']).dt.date
+        df['last_modified'] = pd.to_datetime(df['last_modified']).dt.date
+        
+        # Add temporal relationships using base generator functionality
+        df = self._add_temporal_relationships(df, ts_config)
+        
+        # Apply appointment-specific time series correlations
+        df = self._apply_appointment_time_series_correlations(df, ts_config)
+        
+        return self._apply_realistic_patterns(df)
+    
+    def _select_seasonal_appointment_type(self, appointment_date: date) -> str:
+        """Select appointment type based on seasonal patterns"""
+        month = appointment_date.month
+        
+        # Determine season
+        if month in [12, 1, 2]:
+            season = 'winter'
+        elif month in [3, 4, 5]:
+            season = 'spring'
+        elif month in [6, 7, 8]:
+            season = 'summer'
+        else:
+            season = 'fall'
+        
+        # Get seasonal preferences
+        seasonal_types = self.seasonal_appointment_preferences.get(season, [])
+        
+        # 60% chance to use seasonal preference, 40% use normal distribution
+        if seasonal_types and self.faker.random.random() < 0.6:
+            return self.faker.random_element(seasonal_types)
+        else:
+            return self._select_appointment_type()
+    
+    def _select_urgency_level_for_time_series(self, appointment_date: date) -> str:
+        """Select urgency level with time series considerations"""
+        # During flu season (winter months), more urgent appointments
+        month = appointment_date.month
+        if month in [12, 1, 2, 3]:
+            # Increase urgent appointments during flu season
+            adjusted_urgency = {
+                'Routine': 0.60,
+                'Urgent': 0.35,
+                'Emergency': 0.05
+            }
+        else:
+            adjusted_urgency = self.urgency_levels
+        
+        choices = list(adjusted_urgency.keys())
+        weights = list(adjusted_urgency.values())
+        
+        cumulative_weights = []
+        total = 0
+        for weight in weights:
+            total += weight
+            cumulative_weights.append(total)
+        
+        rand_val = self.faker.random.uniform(0, total)
+        for i, cum_weight in enumerate(cumulative_weights):
+            if rand_val <= cum_weight:
+                return choices[i]
+        
+        return choices[-1]
+    
+    def _select_appointment_time_with_constraints(self, appointment_date: date, doctor: Dict[str, Any],
+                                                daily_counts: Dict, doctor_schedules: Dict) -> time:
+        """Select appointment time considering scheduling constraints"""
+        # Check doctor's daily capacity
+        doctor_id = doctor['doctor_id']
+        date_key = appointment_date
+        
+        # Get current appointment count for this doctor on this date
+        current_count = daily_counts.get(date_key, {}).get(doctor_id, 0)
+        max_daily_appointments = int(doctor['hours_per_day'] * doctor['patients_per_hour'])
+        
+        # If doctor is at capacity, try to find alternative time or adjust
+        if current_count >= max_daily_appointments:
+            # Try to find a less busy time slot
+            available_times = list(self.time_slots.keys())
+            used_times = doctor_schedules.get(doctor_id, {}).get(date_key, [])
+            
+            # Filter out already used times
+            available_times = [t for t in available_times if t not in [str(ut) for ut in used_times]]
+            
+            if available_times:
+                selected_time = self.faker.random_element(available_times)
+            else:
+                # If no available times, use normal selection (overbooking scenario)
+                selected_time = self._select_appointment_time()
+                return selected_time
+        else:
+            # Normal time selection
+            selected_time = self._select_appointment_time()
+            return selected_time
+        
+        # Parse time string to time object
+        hour, minute = map(int, selected_time.split(':'))
+        return time(hour, minute)
+    
+    def _apply_appointment_time_series_correlations(self, data: pd.DataFrame, ts_config) -> pd.DataFrame:
+        """Apply realistic time-based correlations for appointment data"""
+        if len(data) < 2:
+            return data
+        
+        # Sort by appointment date and time to ensure proper time series order
+        data = data.sort_values(['appointment_date', 'appointment_time']).reset_index(drop=True)
+        
+        # Apply temporal correlations for appointment scheduling patterns
+        for i in range(1, len(data)):
+            prev_row = data.iloc[i-1]
+            current_row = data.iloc[i]
+            
+            # Follow-up appointment correlation
+            # If previous appointment needed follow-up, increase chance of related appointment
+            if (prev_row['follow_up_needed'] and 
+                prev_row['patient_id'] == current_row['patient_id'] and
+                (current_row['appointment_date'] - prev_row['appointment_date']).days <= 90):
+                
+                # This might be a follow-up appointment
+                if self.faker.random.random() < 0.3:  # 30% chance
+                    data.loc[i, 'appointment_type'] = 'Follow-up Visit'
+                    data.loc[i, 'chief_complaint'] = 'Follow-up from previous visit'
+                    data.loc[i, 'notes'] = 'Follow-up appointment as scheduled'
+        
+        # Apply seasonal volume adjustments
+        for i in range(len(data)):
+            appointment_date = data.iloc[i]['appointment_date']
+            month = appointment_date.month
+            
+            # Apply seasonal billing adjustments (higher costs during peak seasons)
+            seasonal_multiplier = self.seasonal_patterns.get(month, 1.0)
+            
+            # Adjust billing amount slightly based on seasonal demand
+            current_amount = data.loc[i, 'billing_amount']
+            if seasonal_multiplier > 1.1:  # High demand months
+                adjusted_amount = current_amount * 1.05  # 5% increase
+                data.loc[i, 'billing_amount'] = round(adjusted_amount, 2)
+                
+                # Recalculate insurance and copay
+                insurance_rate = data.loc[i, 'insurance_covered'] / current_amount if current_amount > 0 else 0.8
+                new_insurance_covered = round(adjusted_amount * insurance_rate, 2)
+                new_copay = round(adjusted_amount - new_insurance_covered, 2)
+                
+                data.loc[i, 'insurance_covered'] = new_insurance_covered
+                data.loc[i, 'copay_amount'] = new_copay
+        
+        # Apply doctor workload correlations
+        doctor_workloads = data.groupby(['appointment_date', 'doctor_id']).size().reset_index(name='daily_appointments')
+        
+        for _, workload_row in doctor_workloads.iterrows():
+            if workload_row['daily_appointments'] > 8:  # High workload day
+                # Increase wait times and decrease satisfaction for this doctor on this date
+                mask = ((data['appointment_date'] == workload_row['appointment_date']) & 
+                       (data['doctor_id'] == workload_row['doctor_id']))
+                
+                # These adjustments will be applied in _apply_realistic_patterns
+                # We can add a workload indicator for later processing
+                data.loc[mask, 'high_workload_day'] = True
+        
+        # Fill NaN values for the workload indicator
+        data['high_workload_day'] = data.get('high_workload_day', False)
+        
+        return data
+
     def _select_appointment_type(self) -> str:
         """Select appointment type based on distribution"""
         choices = list(self.appointment_types.keys())
@@ -391,7 +672,235 @@ class AppointmentGenerator(BaseGenerator):
                 appointment_date = self.faker.date_between(start_date=start_date, end_date=historical_end)
             else:
                 # If no valid historical range, use future
-                appointment_date = self.faker.date_between(start_date=start_date, end_date=end_date)
+                appointment_date = datetime.now().date() + timedelta(days=lead_days)
+        else:
+            # Future appointment
+            appointment_date = datetime.now().date() + timedelta(days=lead_days)
+        
+        # Ensure appointment is within valid range
+        appointment_date = max(start_date, min(end_date, appointment_date))
+        
+        # Adjust to business day
+        appointment_date = self._adjust_to_business_day(appointment_date)
+        
+        # Generate appointment time
+        appointment_time = self._select_appointment_time()
+        
+        return appointment_date, appointment_time
+    
+    def _adjust_to_business_day(self, target_date: date) -> date:
+        """Adjust date to nearest business day"""
+        # Skip weekends (Saturday=5, Sunday=6)
+        while target_date.weekday() >= 5:
+            target_date += timedelta(days=1)
+        return target_date
+    
+    def _select_appointment_time(self) -> time:
+        """Select appointment time based on preferences"""
+        choices = list(self.time_slots.keys())
+        weights = list(self.time_slots.values())
+        
+        cumulative_weights = []
+        total = 0
+        for weight in weights:
+            total += weight
+            cumulative_weights.append(total)
+        
+        rand_val = self.faker.random.uniform(0, total)
+        for i, cum_weight in enumerate(cumulative_weights):
+            if rand_val <= cum_weight:
+                selected_time = choices[i]
+                break
+        else:
+            selected_time = choices[-1]
+        
+        # Parse time string to time object
+        hour, minute = map(int, selected_time.split(':'))
+        return time(hour, minute)
+    
+    def _select_doctor_for_appointment(self, specialty: str) -> Dict[str, Any]:
+        """Select appropriate doctor for appointment type"""
+        specialty_doctors = [doc for doc in self.doctors if doc['specialty'] == specialty]
+        
+        if not specialty_doctors:
+            # Fallback to primary care if specialty not found
+            specialty_doctors = [doc for doc in self.doctors if doc['specialty'] == 'Primary Care']
+        
+        return self.faker.random_element(specialty_doctors)
+    
+    def _select_appointment_status(self, appointment_date: date) -> str:
+        """Select appointment status based on date"""
+        today = datetime.now().date()
+        
+        if appointment_date > today:
+            # Future appointments are scheduled
+            return 'Scheduled'
+        elif appointment_date == today:
+            # Today's appointments could be any status
+            return self._weighted_choice(self.status_distribution)
+        else:
+            # Past appointments are mostly completed
+            past_status_dist = {
+                'Completed': 0.85,
+                'Cancelled': 0.10,
+                'No-Show': 0.05
+            }
+            return self._weighted_choice(past_status_dist)
+    
+    def _calculate_actual_duration(self, scheduled_duration: int, status: str) -> int:
+        """Calculate actual appointment duration"""
+        if status in ['Cancelled', 'No-Show']:
+            return 0
+        
+        # Base duration
+        actual_duration = scheduled_duration
+        
+        # Add overtime with some probability
+        if self.faker.random.random() < self.overtime_probability:
+            overtime = max(0, min(self.overtime_minutes['max'],
+                                int(self.faker.random.gauss(
+                                    self.overtime_minutes['mean'],
+                                    self.overtime_minutes['std']
+                                ))))
+            actual_duration += overtime
+        
+        return actual_duration
+    
+    def _generate_appointment_details(self, appointment_type: str, urgency: str, 
+                                    status: str, appointment_date: date) -> Dict[str, Any]:
+        """Generate additional appointment details"""
+        # Generate chief complaint based on appointment type
+        chief_complaints = {
+            'Annual Physical': ['Annual checkup', 'Routine physical exam', 'Preventive care visit'],
+            'Routine Checkup': ['Follow-up visit', 'Routine check', 'General health assessment'],
+            'Sick Visit': ['Cold symptoms', 'Flu-like symptoms', 'Fever', 'Cough', 'Sore throat'],
+            'Cardiology Consultation': ['Chest pain', 'Heart palpitations', 'High blood pressure'],
+            'Dermatology Screening': ['Skin lesion', 'Mole check', 'Rash', 'Skin cancer screening'],
+            'Vaccination': ['Flu shot', 'COVID vaccine', 'Travel vaccines', 'Routine immunization']
+        }
+        
+        complaint_options = chief_complaints.get(appointment_type, ['General consultation'])
+        chief_complaint = self.faker.random_element(complaint_options)
+        
+        # Generate notes based on status
+        if status == 'Completed':
+            notes = f'Patient seen for {chief_complaint.lower()}. Examination completed.'
+        elif status == 'Cancelled':
+            notes = 'Appointment cancelled by patient.'
+        elif status == 'No-Show':
+            notes = 'Patient did not show for scheduled appointment.'
+        else:
+            notes = f'Scheduled appointment for {chief_complaint.lower()}.'
+        
+        # Determine follow-up needs
+        follow_up_needed = False
+        follow_up_weeks = 0
+        
+        if status == 'Completed' and urgency in ['Urgent', 'Emergency']:
+            follow_up_needed = self.faker.random.random() < 0.4  # 40% chance
+            if follow_up_needed:
+                follow_up_weeks = self.faker.random_int(1, 8)
+        elif status == 'Completed' and appointment_type in ['Annual Physical', 'Cardiology Consultation']:
+            follow_up_needed = self.faker.random.random() < 0.2  # 20% chance
+            if follow_up_needed:
+                follow_up_weeks = self.faker.random_int(4, 26)
+        
+        # Generate creation and modification dates
+        created_date = appointment_date - timedelta(days=self.faker.random_int(1, 30))
+        last_modified = max(created_date, appointment_date - timedelta(days=self.faker.random_int(0, 7)))
+        
+        return {
+            'chief_complaint': chief_complaint,
+            'notes': notes,
+            'follow_up_needed': follow_up_needed,
+            'follow_up_weeks': follow_up_weeks,
+            'created_date': created_date,
+            'last_modified': last_modified
+        }
+    
+    def _generate_room_assignment(self, specialty: str) -> str:
+        """Generate room assignment based on specialty"""
+        room_prefixes = {
+            'Primary Care': 'PC',
+            'Cardiology': 'CARD',
+            'Dermatology': 'DERM',
+            'Orthopedics': 'ORTHO',
+            'Endocrinology': 'ENDO',
+            'Psychiatry': 'PSY',
+            'Ophthalmology': 'EYE',
+            'Radiology': 'RAD',
+            'Gastroenterology': 'GI'
+        }
+        
+        prefix = room_prefixes.get(specialty, 'GEN')
+        room_number = self.faker.random_int(1, 20)
+        
+        return f'{prefix}-{room_number:02d}'
+    
+    def _generate_billing_info(self, appointment_type: str, status: str) -> Dict[str, Any]:
+        """Generate billing information"""
+        # Base billing codes and amounts
+        billing_codes = {
+            'Annual Physical': {'code': '99396', 'amount': 250.00},
+            'Routine Checkup': {'code': '99213', 'amount': 180.00},
+            'Follow-up Visit': {'code': '99212', 'amount': 120.00},
+            'Sick Visit': {'code': '99214', 'amount': 200.00},
+            'Cardiology Consultation': {'code': '99243', 'amount': 350.00},
+            'Dermatology Screening': {'code': '99203', 'amount': 220.00},
+            'Orthopedic Consultation': {'code': '99244', 'amount': 380.00},
+            'Vaccination': {'code': '90471', 'amount': 45.00}
+        }
+        
+        billing_info = billing_codes.get(appointment_type, {'code': '99213', 'amount': 180.00})
+        
+        # Adjust amount for cancelled/no-show appointments
+        if status in ['Cancelled', 'No-Show']:
+            if status == 'No-Show':
+                # Some practices charge a no-show fee
+                billing_info['amount'] = 25.00 if self.faker.random.random() < 0.3 else 0.00
+            else:
+                billing_info['amount'] = 0.00
+        
+        # Calculate insurance coverage (typically 70-90%)
+        if billing_info['amount'] > 0:
+            insurance_rate = self.faker.random.uniform(0.70, 0.90)
+            insurance_covered = round(billing_info['amount'] * insurance_rate, 2)
+            copay = round(billing_info['amount'] - insurance_covered, 2)
+        else:
+            insurance_covered = 0.00
+            copay = 0.00
+        
+        return {
+            'code': billing_info['code'],
+            'amount': billing_info['amount'],
+            'insurance_covered': insurance_covered,
+            'copay': copay
+        }
+    
+    def _weighted_choice(self, choices_dict: Dict[str, float]) -> str:
+        """Select item based on weighted probabilities"""
+        choices = list(choices_dict.keys())
+        weights = list(choices_dict.values())
+        
+        cumulative_weights = []
+        total = 0
+        for weight in weights:
+            total += weight
+            cumulative_weights.append(total)
+        
+        rand_val = self.faker.random.uniform(0, total)
+        for i, cum_weight in enumerate(cumulative_weights):
+            if rand_val <= cum_weight:
+                return choices[i]
+        
+        return choices[-1]
+    
+    def _generate_appointment_date(self, start_date: date, end_date: date, 
+                                 appointment_type: str, is_historical: bool) -> date:
+        """Generate realistic appointment date"""
+        if is_historical:
+            # Historical appointments
+            appointment_date = self.faker.date_between(start_date=start_date, end_date=end_date)
         else:
             # Future appointments
             base_date = max(datetime.now().date(), start_date)

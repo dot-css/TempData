@@ -27,6 +27,10 @@ class StockGenerator(BaseGenerator):
         self._setup_sector_correlations()
         self._setup_volatility_patterns()
         self._setup_trading_patterns()
+        
+        # Initialize time series generator for integrated time series support
+        from ...core.time_series import TimeSeriesGenerator
+        self.time_series_generator = TimeSeriesGenerator(self.seeder, self.locale)
     
     def _setup_market_data(self):
         """Setup market sectors and stock symbols"""
@@ -157,13 +161,11 @@ class StockGenerator(BaseGenerator):
         Returns:
             pd.DataFrame: Generated stock data with realistic patterns
         """
-        time_series = kwargs.get('time_series', False)
-        date_range = kwargs.get('date_range', None)
-        symbols = kwargs.get('symbols', None)
-        market_condition = kwargs.get('market_condition', None)
+        # Create time series configuration if requested
+        ts_config = self._create_time_series_config(**kwargs)
         
-        if time_series:
-            return self._generate_time_series(rows, **kwargs)
+        if ts_config:
+            return self._generate_time_series_stocks(rows, ts_config, **kwargs)
         else:
             return self._generate_snapshot(rows, **kwargs)
     
@@ -194,6 +196,313 @@ class StockGenerator(BaseGenerator):
         
         df = pd.DataFrame(data)
         return self._apply_realistic_patterns(df)
+    
+    def _generate_time_series_integrated(self, rows: int, **kwargs) -> pd.DataFrame:
+        """Generate time series stock data using integrated TimeSeriesGenerator"""
+        from ...core.time_series import create_time_series_config
+        
+        # Extract time series parameters
+        start_date = kwargs.get('start_date', datetime.now() - timedelta(days=365))
+        end_date = kwargs.get('end_date', datetime.now())
+        interval = kwargs.get('interval', '1day')
+        symbols = kwargs.get('symbols', ['AAPL', 'MSFT', 'GOOGL'])
+        
+        # Convert string dates if needed
+        if isinstance(start_date, str):
+            start_date = datetime.fromisoformat(start_date)
+        if isinstance(end_date, str):
+            end_date = datetime.fromisoformat(end_date)
+        
+        # Create time series configuration
+        ts_config = create_time_series_config(
+            start_date=start_date,
+            end_date=end_date,
+            interval=interval,
+            seasonal_patterns=True,
+            trend_direction=kwargs.get('trend_direction', 'random'),
+            volatility_level=kwargs.get('volatility_level', 0.2),
+            correlation_strength=0.6  # Financial correlations
+        )
+        
+        data = []
+        
+        # Generate data for each symbol
+        for symbol in symbols:
+            stock_info = next((s for s in self.all_symbols if s['symbol'] == symbol), self.all_symbols[0])
+            
+            # Get base price for this symbol
+            min_price, max_price = stock_info['price_range']
+            base_price = self.faker.random.uniform(min_price, max_price)
+            
+            # Generate base time series using TimeSeriesGenerator
+            base_series = self.time_series_generator.generate_time_series_base(
+                ts_config, 
+                base_value=base_price,
+                value_range=(max(1.0, min_price * 0.1), max_price * 2.0)
+            )
+            
+            # Apply financial-specific patterns to each timestamp
+            for _, row in base_series.iterrows():
+                timestamp = row['timestamp']
+                price = row['value']
+                
+                # Generate realistic OHLC from the time series price
+                stock_data = self._generate_financial_record_from_price(
+                    stock_info, timestamp, price, **kwargs
+                )
+                data.append(stock_data)
+        
+        # Limit to requested rows if needed
+        if len(data) > rows:
+            data = data[:rows]
+        
+        df = pd.DataFrame(data)
+        
+        # Add cross-symbol correlations for realistic market behavior
+        df = self._apply_sector_correlations(df)
+        
+        return self._apply_realistic_patterns(df)
+    
+    def _generate_time_series_stocks(self, rows: int, ts_config, **kwargs) -> pd.DataFrame:
+        """Generate time series stock data using integrated time series system"""
+        symbols = kwargs.get('symbols', ['AAPL', 'MSFT', 'GOOGL'])
+        
+        # Generate timestamps from time series config
+        timestamps = self._generate_time_series_timestamps(ts_config, rows)
+        
+        data = []
+        
+        # Generate data for each symbol
+        for symbol in symbols:
+            stock_info = next((s for s in self.all_symbols if s['symbol'] == symbol), self.all_symbols[0])
+            
+            # Get base price for this symbol
+            min_price, max_price = stock_info['price_range']
+            base_price = self.faker.random.uniform(min_price, max_price)
+            
+            # Generate base time series using TimeSeriesGenerator
+            base_series = self.time_series_generator.generate_time_series_base(
+                ts_config, 
+                base_value=base_price,
+                value_range=(max(1.0, min_price * 0.1), max_price * 2.0)
+            )
+            
+            # Apply financial-specific patterns to each timestamp
+            for i, timestamp in enumerate(timestamps):
+                if i >= len(base_series):
+                    break
+                    
+                # Get time series price value
+                price = base_series.iloc[i]['value']
+                
+                # Generate realistic OHLC from the time series price
+                stock_data = self._generate_financial_record_from_price(
+                    stock_info, timestamp, price, **kwargs
+                )
+                data.append(stock_data)
+                
+                # Break if we have enough rows
+                if len(data) >= rows:
+                    break
+            
+            if len(data) >= rows:
+                break
+        
+        # Limit to requested rows if needed
+        if len(data) > rows:
+            data = data[:rows]
+        
+        df = pd.DataFrame(data)
+        
+        # Add temporal relationships using base generator functionality
+        df = self._add_temporal_relationships(df, ts_config)
+        
+        # Apply realistic time-based correlations for financial data
+        df = self._apply_financial_time_series_correlations(df, ts_config)
+        
+        # Add cross-symbol correlations for realistic market behavior
+        df = self._apply_sector_correlations(df)
+        
+        return self._apply_realistic_patterns(df)
+    
+    def _apply_financial_time_series_correlations(self, df: pd.DataFrame, ts_config) -> pd.DataFrame:
+        """Apply financial-specific time series correlations"""
+        if 'date' not in df.columns:
+            return df
+        
+        # Sort by timestamp for proper correlation analysis
+        df = df.sort_values('date').reset_index(drop=True)
+        
+        # Rename date to timestamp for consistency
+        if 'date' in df.columns and 'timestamp' not in df.columns:
+            df['timestamp'] = df['date']
+        
+        # Add time-based features for financial patterns
+        df['hour'] = pd.to_datetime(df['timestamp']).dt.hour
+        df['day_of_week'] = pd.to_datetime(df['timestamp']).dt.dayofweek
+        df['month'] = pd.to_datetime(df['timestamp']).dt.month
+        df['is_trading_hours'] = ((df['hour'] >= 9) & (df['hour'] <= 16))
+        df['is_weekend'] = (df['day_of_week'] >= 5)
+        
+        # Apply market hours volatility patterns
+        trading_hours_mask = df['is_trading_hours']
+        df.loc[trading_hours_mask, 'volatility'] *= self.faker.random.uniform(1.1, 1.3)
+        
+        # Apply end-of-day effects (higher volatility near market close)
+        end_of_day_mask = (df['hour'] >= 15)
+        df.loc[end_of_day_mask, 'volatility'] *= self.faker.random.uniform(1.2, 1.5)
+        
+        # Apply volume correlations with volatility
+        high_volatility_mask = df['volatility'] > df['volatility'].quantile(0.75)
+        volume_multiplier = self.faker.random.uniform(1.3, 1.8)
+        df.loc[high_volatility_mask, 'volume'] = (df.loc[high_volatility_mask, 'volume'] * volume_multiplier).astype(int)
+        
+        # Apply monthly earnings season effects
+        earnings_months = [1, 4, 7, 10]  # Quarterly earnings months
+        earnings_mask = df['month'].isin(earnings_months)
+        df.loc[earnings_mask, 'volatility'] *= self.faker.random.uniform(1.1, 1.4)
+        volume_multiplier = self.faker.random.uniform(1.2, 1.6)
+        df.loc[earnings_mask, 'volume'] = (df.loc[earnings_mask, 'volume'] * volume_multiplier).astype(int)
+        
+        # Add momentum effects (trending behavior)
+        if len(df) > 5:
+            df['price_momentum'] = df.groupby('symbol')['close_price'].pct_change(periods=5).fillna(0)
+            
+            # Positive momentum tends to continue (with some mean reversion)
+            momentum_mask = df['price_momentum'] > 0.02  # 2% positive momentum
+            df.loc[momentum_mask, 'daily_return'] *= self.faker.random.uniform(1.05, 1.15)
+            
+            # Negative momentum also tends to continue
+            negative_momentum_mask = df['price_momentum'] < -0.02
+            df.loc[negative_momentum_mask, 'daily_return'] *= self.faker.random.uniform(0.85, 0.95)
+        
+        return df
+    
+    def _generate_financial_record_from_price(self, stock_info: Dict, timestamp: datetime, 
+                                            base_price: float, **kwargs) -> Dict:
+        """Generate financial record from time series base price"""
+        symbol = stock_info['symbol']
+        sector = stock_info['sector']
+        base_volatility = stock_info['base_volatility']
+        volume_multiplier = stock_info['volume_multiplier']
+        
+        # Use base_price as close price and generate OHLC around it
+        close_price = base_price
+        
+        # Generate realistic intraday spread
+        interval = kwargs.get('interval', '1day')
+        if interval in ['1min', '5min']:
+            spread_factor = 0.002  # 0.2% spread for short intervals
+        elif interval == '1hour':
+            spread_factor = 0.01   # 1% spread for hourly
+        else:
+            spread_factor = 0.03   # 3% spread for daily
+        
+        # Generate OHLC with realistic relationships
+        daily_volatility = base_volatility * spread_factor
+        
+        # Open price (slight gap from previous close)
+        open_gap = self.faker.random.gauss(0, daily_volatility * 0.5)
+        open_price = close_price * (1 + open_gap)
+        
+        # High and low prices
+        high_move = abs(self.faker.random.gauss(0, daily_volatility))
+        low_move = abs(self.faker.random.gauss(0, daily_volatility))
+        
+        high_price = max(open_price, close_price) * (1 + high_move)
+        low_price = min(open_price, close_price) * (1 - low_move)
+        
+        # Ensure logical price relationships
+        high_price = max(high_price, open_price, close_price)
+        low_price = min(low_price, open_price, close_price)
+        
+        # Calculate return
+        if open_price > 0:
+            period_return = (close_price - open_price) / open_price
+        else:
+            period_return = 0
+        
+        # Generate volume with time-based patterns
+        base_volume = self.faker.random_int(100000, 10000000)
+        volume = int(base_volume * volume_multiplier)
+        
+        # Apply temporal volume patterns
+        if hasattr(timestamp, 'weekday'):
+            day_multiplier = self.day_of_week_volume.get(timestamp.weekday(), 1.0)
+            volume = int(volume * day_multiplier)
+        
+        month_multiplier = self.monthly_volume.get(timestamp.month, 1.0)
+        volume = int(volume * month_multiplier)
+        
+        # Volume increases with volatility
+        volatility_multiplier = 1 + abs(period_return) * 5
+        volume = int(volume * volatility_multiplier)
+        
+        # Apply intraday volume patterns for short intervals
+        if interval in ['1min', '5min', '1hour'] and hasattr(timestamp, 'hour'):
+            hour_volume_mult = self.intraday_volatility.get(timestamp.hour, 1.0)
+            volume = int(volume * hour_volume_mult)
+        
+        return {
+            'symbol': symbol,
+            'date': timestamp,
+            'open_price': round(open_price, 2),
+            'high_price': round(high_price, 2),
+            'low_price': round(low_price, 2),
+            'close_price': round(close_price, 2),
+            'volume': volume,
+            'sector': sector,
+            'market_condition': self._select_market_condition(),
+            'daily_return': round(period_return * 100, 4),
+            'volatility': round(base_volatility * 100, 2)
+        }
+    
+    def _apply_sector_correlations(self, data: pd.DataFrame) -> pd.DataFrame:
+        """Apply realistic correlations between sectors in time series data"""
+        if len(data) == 0 or 'sector' not in data.columns:
+            return data
+        
+        # Group by timestamp to apply correlations
+        data = data.sort_values(['date', 'symbol']).reset_index(drop=True)
+        
+        # For each timestamp, adjust prices based on sector correlations
+        for timestamp in data['date'].unique():
+            timestamp_data = data[data['date'] == timestamp].copy()
+            
+            if len(timestamp_data) > 1:
+                # Calculate sector average returns
+                sector_returns = timestamp_data.groupby('sector')['daily_return'].mean()
+                
+                # Apply correlation adjustments
+                for idx, row in timestamp_data.iterrows():
+                    sector = row['sector']
+                    base_return = row['daily_return']
+                    
+                    # Calculate correlated adjustment
+                    correlation_adjustment = 0
+                    for other_sector, other_return in sector_returns.items():
+                        if other_sector != sector:
+                            correlation = self.sector_correlations.get(sector, {}).get(other_sector, 0)
+                            correlation_adjustment += correlation * other_return * 0.1  # Dampen effect
+                    
+                    # Apply correlation adjustment to price
+                    adjusted_return = base_return + correlation_adjustment
+                    original_close = data.loc[data.index[idx], 'close_price']
+                    original_open = data.loc[data.index[idx], 'open_price']
+                    
+                    if original_open > 0:
+                        new_close = original_open * (1 + adjusted_return / 100)
+                        data.loc[data.index[idx], 'close_price'] = round(new_close, 2)
+                        data.loc[data.index[idx], 'daily_return'] = round(adjusted_return, 4)
+                        
+                        # Adjust high/low if needed
+                        current_high = data.loc[data.index[idx], 'high_price']
+                        current_low = data.loc[data.index[idx], 'low_price']
+                        
+                        data.loc[data.index[idx], 'high_price'] = round(max(current_high, new_close, original_open), 2)
+                        data.loc[data.index[idx], 'low_price'] = round(min(current_low, new_close, original_open), 2)
+        
+        return data
     
     def _generate_time_series(self, rows: int, **kwargs) -> pd.DataFrame:
         """Generate time series stock data"""

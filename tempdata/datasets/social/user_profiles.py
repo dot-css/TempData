@@ -195,11 +195,21 @@ class UserProfilesGenerator(BaseGenerator):
         
         Args:
             rows: Number of user profiles to generate
-            **kwargs: Additional parameters (platform, country, etc.)
+            **kwargs: Additional parameters (platform, country, time_series, etc.)
             
         Returns:
             pd.DataFrame: Generated user profiles data with realistic patterns
         """
+        # Check if time series generation is requested
+        ts_config = self._create_time_series_config(**kwargs)
+        
+        if ts_config:
+            return self._generate_time_series_user_profiles(rows, ts_config, **kwargs)
+        else:
+            return self._generate_snapshot_user_profiles(rows, **kwargs)
+    
+    def _generate_snapshot_user_profiles(self, rows: int, **kwargs) -> pd.DataFrame:
+        """Generate snapshot user profiles data (random registration dates)"""
         platform = kwargs.get('platform', 'general')
         country = kwargs.get('country', 'global')
         include_relationships = kwargs.get('include_relationships', True)
@@ -656,6 +666,166 @@ class UserProfilesGenerator(BaseGenerator):
         """Select online time preference"""
         return self.faker.random_element(elements=self.online_preferences)
     
+    def _generate_time_series_user_profiles(self, rows: int, ts_config, **kwargs) -> pd.DataFrame:
+        """Generate time series user profiles data with temporal registration patterns"""
+        platform = kwargs.get('platform', 'general')
+        country = kwargs.get('country', 'global')
+        include_relationships = kwargs.get('include_relationships', True)
+        
+        # Generate timestamps from time series config
+        timestamps = self._generate_time_series_timestamps(ts_config, rows)
+        
+        data = []
+        
+        for i, timestamp in enumerate(timestamps):
+            if i >= rows:
+                break
+                
+            # Generate demographic characteristics
+            age_group = self._select_age_group()
+            gender = self._select_gender()
+            location_type = self._select_location_type()
+            
+            # Generate basic profile info
+            user_id = f'USR_{i+1:06d}'
+            first_name, last_name = self._generate_names(gender)
+            username = self._generate_username(first_name, last_name, age_group)
+            display_name = self._generate_display_name(first_name, last_name, age_group)
+            
+            # Generate interests and bio
+            primary_interests = self._select_interests(age_group)
+            bio = self._generate_bio(age_group, primary_interests, location_type)
+            
+            # Generate follower/following counts and relationships
+            user_type = self._determine_user_type()
+            followers_count, following_count = self._generate_follower_counts(user_type, age_group)
+            
+            # Generate activity patterns
+            activity_level = self._select_activity_level(age_group)
+            online_preference = self._select_online_preference(age_group)
+            
+            # Use timestamp as join date for time series
+            join_date = timestamp.date()
+            is_verified = self._determine_verification_status(user_type, followers_count)
+            is_private = self._determine_privacy_setting(age_group, user_type)
+            
+            # Generate engagement metrics
+            engagement_level = self._select_engagement_level(user_type)
+            avg_likes_per_post, avg_comments_per_post = self._calculate_engagement_metrics(
+                followers_count, engagement_level
+            )
+            
+            # Generate posting patterns
+            posts_per_week, stories_per_week = self._generate_posting_frequency(activity_level)
+            
+            # Create profile record
+            profile = {
+                'user_id': user_id,
+                'username': username,
+                'display_name': display_name,
+                'first_name': first_name,
+                'last_name': last_name,
+                'bio': bio,
+                'age_group': age_group,
+                'gender': gender,
+                'location_type': location_type,
+                'location': self._generate_location(location_type, country),
+                'primary_interests': ', '.join(primary_interests),
+                'followers_count': followers_count,
+                'following_count': following_count,
+                'user_type': user_type,
+                'activity_level': activity_level,
+                'online_preference': online_preference,
+                'join_date': join_date,
+                'account_age_days': (datetime.now().date() - join_date).days,
+                'is_verified': is_verified,
+                'is_private': is_private,
+                'engagement_level': engagement_level,
+                'avg_likes_per_post': avg_likes_per_post,
+                'avg_comments_per_post': avg_comments_per_post,
+                'posts_per_week': posts_per_week,
+                'stories_per_week': stories_per_week,
+                'follower_following_ratio': round(followers_count / max(following_count, 1), 2),
+                'bio_length': len(bio),
+                'has_profile_picture': self.faker.random.random() > 0.05,
+                'has_bio': len(bio.strip()) > 0
+            }
+            
+            data.append(profile)
+        
+        df = pd.DataFrame(data)
+        
+        # Add temporal relationships using base generator functionality
+        df = self._add_temporal_relationships(df, ts_config)
+        
+        # Apply user profile specific time series correlations
+        df = self._apply_user_profile_time_series_correlations(df, ts_config)
+        
+        return self._apply_realistic_patterns(df)
+    
+    def _apply_user_profile_time_series_correlations(self, data: pd.DataFrame, ts_config) -> pd.DataFrame:
+        """Apply realistic time-based correlations for user profile data"""
+        if len(data) < 2:
+            return data
+        
+        # Sort by join_date to ensure proper time series order
+        data = data.sort_values('join_date').reset_index(drop=True)
+        
+        # Apply temporal correlations for user growth patterns
+        for i in range(1, len(data)):
+            prev_row = data.iloc[i-1]
+            current_row = data.iloc[i]
+            
+            # Platform growth affects follower counts over time
+            # Early users tend to have more followers due to network effects
+            days_since_start = (current_row['join_date'] - data.iloc[0]['join_date']).days
+            if days_since_start > 0:
+                # Growth factor decreases over time (early adopter advantage)
+                growth_factor = max(0.5, 1.0 - (days_since_start / 365) * 0.3)
+                
+                # Apply growth factor to follower counts
+                if current_row['user_type'] in ['average', 'popular']:
+                    adjusted_followers = int(current_row['followers_count'] * growth_factor)
+                    data.loc[i, 'followers_count'] = max(0, adjusted_followers)
+                    
+                    # Recalculate follower/following ratio
+                    following_count = data.loc[i, 'following_count']
+                    data.loc[i, 'follower_following_ratio'] = round(
+                        adjusted_followers / max(following_count, 1), 2
+                    )
+        
+        # Apply seasonal registration patterns
+        for i in range(len(data)):
+            join_date = data.iloc[i]['join_date']
+            month = join_date.month
+            
+            # Seasonal activity adjustments
+            seasonal_multipliers = {
+                1: 1.2,   # January - New Year resolutions
+                2: 0.9,   # February
+                3: 1.0,   # March
+                4: 1.0,   # April
+                5: 1.0,   # May
+                6: 0.8,   # June - summer break
+                7: 0.7,   # July - vacation
+                8: 0.8,   # August - vacation
+                9: 1.3,   # September - back to school/work
+                10: 1.1,  # October
+                11: 1.0,  # November
+                12: 0.9   # December - holidays
+            }
+            
+            seasonal_mult = seasonal_multipliers.get(month, 1.0)
+            
+            # Apply seasonal adjustment to activity metrics
+            current_posts = data.loc[i, 'posts_per_week']
+            current_stories = data.loc[i, 'stories_per_week']
+            
+            data.loc[i, 'posts_per_week'] = max(1, int(current_posts * seasonal_mult))
+            data.loc[i, 'stories_per_week'] = max(0, int(current_stories * seasonal_mult))
+        
+        return data
+
     def _generate_join_date(self, age_group: str) -> datetime:
         """Generate realistic join date based on age group"""
         # Younger users joined more recently, older users have been around longer

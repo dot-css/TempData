@@ -334,14 +334,23 @@ class SystemLogsGenerator(BaseGenerator):
         Returns:
             pd.DataFrame: Generated system logs data with realistic patterns
         """
-        time_series = kwargs.get('time_series', False)
+        # Create time series configuration if requested
+        ts_config = self._create_time_series_config(**kwargs)
+        
+        if ts_config:
+            return self._generate_time_series_logs(rows, ts_config, **kwargs)
+        else:
+            return self._generate_snapshot_logs(rows, **kwargs)
+    
+    def _generate_snapshot_logs(self, rows: int, **kwargs) -> pd.DataFrame:
+        """Generate snapshot system logs data (random timestamps)"""
         date_range = kwargs.get('date_range', None)
         
         data = []
         incident_tracker = {}  # Track ongoing incidents for clustering
         
         # Generate base timestamp range
-        if time_series and date_range:
+        if date_range:
             start_date, end_date = date_range
             base_time = self.faker.date_time_between(start_date=start_date, end_date=end_date)
         else:
@@ -349,12 +358,171 @@ class SystemLogsGenerator(BaseGenerator):
         
         for i in range(rows):
             log_entry = self._generate_log_entry(
-                i, base_time, incident_tracker, time_series
+                i, base_time, incident_tracker, False
             )
             data.append(log_entry)
         
         df = pd.DataFrame(data)
         return self._apply_realistic_patterns(df)
+    
+    def _generate_time_series_logs(self, rows: int, ts_config, **kwargs) -> pd.DataFrame:
+        """Generate time series system logs data using integrated time series system"""
+        # Generate timestamps from time series config
+        timestamps = self._generate_time_series_timestamps(ts_config, rows)
+        
+        data = []
+        incident_tracker = {}  # Track ongoing incidents for clustering
+        
+        # Generate base time series for error rate patterns
+        error_rate_series = self.time_series_generator.generate_time_series_base(
+            ts_config, base_value=0.05, value_range=(0.001, 0.3)
+        )
+        
+        # Generate base time series for system load patterns
+        load_series = self.time_series_generator.generate_time_series_base(
+            ts_config, base_value=50.0, value_range=(10.0, 95.0)
+        )
+        
+        for i, timestamp in enumerate(timestamps):
+            if i >= rows:
+                break
+                
+            # Use time series values to influence log characteristics
+            error_rate = error_rate_series.iloc[i % len(error_rate_series)]['value']
+            system_load = load_series.iloc[i % len(load_series)]['value']
+            
+            # Generate time-aware log entry
+            log_entry = self._generate_time_aware_log_entry(
+                i, timestamp, incident_tracker, error_rate, system_load
+            )
+            data.append(log_entry)
+        
+        df = pd.DataFrame(data)
+        
+        # Apply time series correlations to key metrics
+        df = self._apply_time_series_correlation(df, ts_config, 'response_time_ms')
+        df = self._apply_time_series_correlation(df, ts_config, 'cpu_usage_percent')
+        
+        # Add temporal relationships
+        df = self._add_temporal_relationships(df, ts_config)
+        
+        return self._apply_realistic_patterns(df)
+    
+    def _generate_time_aware_log_entry(self, index: int, timestamp: datetime, 
+                                     incident_tracker: Dict, error_rate: float, 
+                                     system_load: float) -> Dict[str, Any]:
+        """Generate time-aware log entry with system metrics influence"""
+        
+        # Adjust log level probabilities based on error rate and system load
+        error_multiplier = 1.0 + (error_rate * 10)  # Higher error rate = more errors
+        load_multiplier = 1.0 + (system_load / 100.0)  # Higher load = more warnings
+        
+        # Calculate adjusted probabilities
+        adjusted_probs = {}
+        for level, info in self.log_levels.items():
+            base_prob = info['probability']
+            if level in ['ERROR', 'FATAL']:
+                adjusted_probs[level] = base_prob * error_multiplier
+            elif level == 'WARN':
+                adjusted_probs[level] = base_prob * load_multiplier
+            else:
+                adjusted_probs[level] = base_prob
+        
+        # Normalize probabilities
+        total_prob = sum(adjusted_probs.values())
+        normalized_probs = [adjusted_probs[level] / total_prob for level in self.log_levels.keys()]
+        
+        # Select log level
+        log_level = self._select_weighted_choice(
+            list(self.log_levels.keys()),
+            normalized_probs
+        )
+        
+        # Select service based on time of day and system load
+        hour = timestamp.hour
+        day_of_week = timestamp.weekday()
+        
+        # Business hours effect (9 AM - 5 PM weekdays)
+        service_multipliers = {}
+        for service, info in self.services.items():
+            multiplier = 1.0
+            
+            # Business hours increase API and web server activity
+            if 9 <= hour <= 17 and day_of_week < 5:
+                if service in ['api', 'web_server']:
+                    multiplier *= 1.5
+                elif service == 'database':
+                    multiplier *= 1.3
+            else:
+                # Off-hours increase batch processing and maintenance
+                if service in ['queue', 'database']:
+                    multiplier *= 1.2
+            
+            # High system load affects certain services more
+            if system_load > 70:
+                if service in ['database', 'cache']:
+                    multiplier *= 1.4
+                elif service == 'api':
+                    multiplier *= 1.2
+            
+            service_multipliers[service] = info['probability'] * multiplier
+        
+        # Normalize and select service
+        total_service_prob = sum(service_multipliers.values())
+        service_probs = [service_multipliers[svc] / total_service_prob for svc in self.services.keys()]
+        
+        service = self._select_weighted_choice(
+            list(self.services.keys()),
+            service_probs
+        )
+        
+        # Select error pattern if applicable
+        error_pattern = None
+        if log_level in ['ERROR', 'FATAL'] or (log_level == 'WARN' and self.faker.random.random() < 0.3):
+            error_pattern = self._select_error_pattern()
+        
+        # Generate log message
+        message = self._generate_log_message(log_level, service, error_pattern)
+        
+        # Generate response time influenced by system load
+        base_response_time = self._generate_response_time(service, log_level)
+        load_factor = 1.0 + (system_load / 100.0)  # Higher load = slower responses
+        adjusted_response_time = int(base_response_time * load_factor)
+        
+        # Generate CPU usage influenced by system load
+        base_cpu = self.faker.random_int(10, 30)
+        cpu_usage = min(95, int(base_cpu + (system_load * 0.6)))
+        
+        # Generate log entry
+        log_entry = {
+            'timestamp': timestamp,
+            'log_level': log_level,
+            'service': service,
+            'message': message,
+            'thread_id': f'thread-{self.faker.random_int(1, 50):02d}',
+            'process_id': self.faker.random_int(1000, 9999),
+            'host': self._generate_hostname(service),
+            'source_file': self._generate_source_file(service),
+            'line_number': self.faker.random_int(1, 1000),
+            'request_id': f'req-{self.faker.uuid4()[:8]}' if service in ['api', 'web_server'] else None,
+            'user_id': f'user-{self.faker.random_int(1, 10000):06d}' if self.faker.random.random() < 0.3 else None,
+            'session_id': f'sess-{self.faker.uuid4()[:12]}' if service in ['api', 'web_server'] and self.faker.random.random() < 0.4 else None,
+            'response_time_ms': adjusted_response_time,
+            'status_code': self._generate_status_code(service, log_level),
+            'ip_address': self.faker.ipv4() if service in ['api', 'web_server'] else None,
+            'user_agent': self.faker.user_agent() if service == 'web_server' else None,
+            'error_code': self._generate_error_code(log_level, error_pattern),
+            'stack_trace': self._generate_stack_trace(log_level) if log_level in ['ERROR', 'FATAL'] and self.faker.random.random() < 0.3 else None,
+            'cpu_usage_percent': cpu_usage,
+            'memory_usage_mb': self.faker.random_int(100, 2000),
+            'system_load': system_load
+        }
+        
+        # Update incident tracker
+        if error_pattern and log_level in ['ERROR', 'FATAL']:
+            self._update_incident_tracker(incident_tracker, error_pattern, timestamp, service)
+        
+        return log_entry
     
     def _generate_log_entry(self, index: int, base_time: datetime, 
                            incident_tracker: Dict, time_series: bool) -> Dict[str, Any]:

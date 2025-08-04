@@ -197,11 +197,21 @@ class PatientGenerator(BaseGenerator):
         
         Args:
             rows: Number of patient records to generate
-            **kwargs: Additional parameters (country, date_range, etc.)
+            **kwargs: Additional parameters (country, date_range, time_series, etc.)
             
         Returns:
             pd.DataFrame: Generated patient data with realistic patterns
         """
+        # Check if time series generation is requested
+        ts_config = self._create_time_series_config(**kwargs)
+        
+        if ts_config:
+            return self._generate_time_series_patients(rows, ts_config, **kwargs)
+        else:
+            return self._generate_snapshot_patients(rows, **kwargs)
+    
+    def _generate_snapshot_patients(self, rows: int, **kwargs) -> pd.DataFrame:
+        """Generate snapshot patient data (random registration dates)"""
         country = kwargs.get('country', 'global')
         include_sensitive = kwargs.get('include_sensitive', False)  # For privacy compliance
         
@@ -302,6 +312,382 @@ class PatientGenerator(BaseGenerator):
         
         df = pd.DataFrame(data)
         return self._apply_realistic_patterns(df)
+    
+    def _generate_time_series_patients(self, rows: int, ts_config, **kwargs) -> pd.DataFrame:
+        """Generate time series patient data using integrated time series system"""
+        country = kwargs.get('country', 'global')
+        include_sensitive = kwargs.get('include_sensitive', False)
+        
+        # Generate timestamps from time series config
+        timestamps = self._generate_time_series_timestamps(ts_config, rows)
+        
+        # Generate base patient registration volume time series
+        base_registration_volume = 20  # Base daily patient registrations
+        
+        # Create base time series for registration volume
+        volume_series = self.time_series_generator.generate_time_series_base(
+            ts_config,
+            base_value=base_registration_volume,
+            value_range=(base_registration_volume * 0.2, base_registration_volume * 3.0)
+        )
+        
+        data = []
+        
+        # Track registration patterns for realistic correlations
+        registration_history = {}
+        condition_trends = {}
+        
+        for i, timestamp in enumerate(timestamps):
+            if i >= rows or i >= len(volume_series):
+                break
+            
+            # Get time series volume value (represents registration intensity)
+            registration_intensity = volume_series.iloc[i]['value'] / base_registration_volume
+            
+            # Apply time-based patient registration patterns
+            registration_date = timestamp.date()
+            
+            # Generate demographic information with time-based trends
+            age_group = self._select_time_series_age_group(timestamp, registration_intensity)
+            age = self._generate_age_for_group(age_group)
+            gender = self._select_gender()
+            blood_type = self._select_blood_type()
+            ethnicity = self._select_ethnicity()
+            
+            # Generate personal information
+            if gender == 'M':
+                first_name = self.faker.first_name_male()
+            elif gender == 'F':
+                first_name = self.faker.first_name_female()
+            else:
+                first_name = self.faker.first_name()
+            
+            last_name = self.faker.last_name()
+            date_of_birth = self._calculate_birth_date(age)
+            
+            # Generate contact information
+            phone = self.faker.phone_number()
+            email = self._generate_email(first_name, last_name) if self.faker.random.random() < 0.75 else None
+            
+            # Generate address
+            address = self._generate_address(country)
+            
+            # Generate medical information with time-based trends
+            medical_conditions = self._generate_time_series_medical_conditions(
+                age_group, gender, timestamp, condition_trends, registration_intensity
+            )
+            medications = self._generate_medications(medical_conditions)
+            allergies = self._generate_allergies()
+            
+            # Generate health metrics
+            health_metrics = self._generate_health_metrics(age_group, gender, medical_conditions)
+            
+            # Generate insurance and care information
+            insurance_info = self._generate_insurance_info(age_group)
+            primary_care_provider = self._generate_primary_care_provider()
+            
+            # Generate emergency contact
+            emergency_contact = self._generate_emergency_contact(age_group, gender)
+            
+            # Generate visit history with time-based patterns
+            visit_history = self._generate_time_series_visit_history(
+                age_group, medical_conditions, registration_date
+            )
+            
+            # Generate preferred language
+            preferred_language = self._select_preferred_language()
+            
+            patient = {
+                'patient_id': f'PAT_{i+1:06d}',
+                'first_name': first_name,
+                'last_name': last_name,
+                'date_of_birth': date_of_birth,
+                'age': age,
+                'age_group': age_group,
+                'gender': gender,
+                'blood_type': blood_type,
+                'ethnicity': ethnicity,
+                'phone': phone,
+                'email': email,
+                'address_line1': address['street'],
+                'city': address['city'],
+                'state_province': address['state'],
+                'postal_code': address['postal_code'],
+                'country': address['country'],
+                'preferred_language': preferred_language,
+                'medical_conditions': ', '.join(medical_conditions) if medical_conditions else 'None',
+                'current_medications': ', '.join(medications) if medications else 'None',
+                'allergies': ', '.join(allergies) if allergies else 'None',
+                'height_cm': health_metrics['height_cm'],
+                'weight_kg': health_metrics['weight_kg'],
+                'bmi': health_metrics['bmi'],
+                'blood_pressure_systolic': health_metrics['bp_systolic'],
+                'blood_pressure_diastolic': health_metrics['bp_diastolic'],
+                'smoking_status': health_metrics['smoking_status'],
+                'alcohol_consumption': health_metrics['alcohol_consumption'],
+                'insurance_type': insurance_info['type'],
+                'insurance_id': insurance_info['id'],
+                'primary_care_provider': primary_care_provider,
+                'emergency_contact_name': emergency_contact['name'],
+                'emergency_contact_relationship': emergency_contact['relationship'],
+                'emergency_contact_phone': emergency_contact['phone'],
+                'last_visit_date': visit_history['last_visit'],
+                'total_visits_last_year': visit_history['visits_last_year'],
+                'registration_date': registration_date,
+                'registration_datetime': timestamp,
+                'registration_intensity': round(registration_intensity, 3)
+            }
+            
+            # Add sensitive information only if requested
+            if include_sensitive:
+                patient['ssn'] = self.faker.ssn()
+                patient['medical_record_number'] = f'MRN{self.faker.random_int(100000, 999999)}'
+            
+            # Track registration patterns for correlation
+            month_key = f"{timestamp.year}-{timestamp.month:02d}"
+            if month_key not in registration_history:
+                registration_history[month_key] = []
+            registration_history[month_key].append({
+                'timestamp': timestamp,
+                'age_group': age_group,
+                'conditions': medical_conditions,
+                'intensity': registration_intensity
+            })
+            
+            # Track condition trends
+            for condition in medical_conditions:
+                if condition not in condition_trends:
+                    condition_trends[condition] = []
+                condition_trends[condition].append({
+                    'timestamp': timestamp,
+                    'age_group': age_group,
+                    'intensity': registration_intensity
+                })
+            
+            data.append(patient)
+        
+        df = pd.DataFrame(data)
+        
+        # Add temporal relationships using base generator functionality
+        df = self._add_temporal_relationships(df, ts_config)
+        
+        # Apply patient-specific time series correlations
+        df = self._apply_patient_time_series_correlations(df, ts_config)
+        
+        return self._apply_realistic_patterns(df)
+    
+    def _select_time_series_age_group(self, timestamp: datetime, registration_intensity: float) -> str:
+        """Select age group with time-based trends"""
+        # Base age group selection
+        base_age_group = self._select_age_group()
+        
+        # Apply time-based trends
+        hour = timestamp.hour
+        day_of_week = timestamp.weekday()
+        month = timestamp.month
+        
+        # Time-based age group preferences for healthcare
+        if 9 <= hour <= 17:  # Business hours - more working-age adults
+            if base_age_group in ['pediatric', 'elderly'] and self.faker.random.random() < 0.3:
+                base_age_group = self.faker.random_element(['young_adult', 'middle_aged'])
+        elif 18 <= hour <= 20:  # Evening - more families with children
+            if base_age_group in ['young_adult', 'middle_aged'] and self.faker.random.random() < 0.2:
+                base_age_group = 'pediatric'
+        
+        # Weekend patterns - more non-urgent registrations
+        if day_of_week >= 5:  # Weekend
+            if self.faker.random.random() < 0.2:
+                base_age_group = self.faker.random_element(['young_adult', 'middle_aged'])
+        
+        # Seasonal patterns - flu season affects age distributions
+        if month in [10, 11, 12, 1, 2]:  # Flu season
+            if self.faker.random.random() < 0.3:
+                base_age_group = self.faker.random_element(['pediatric', 'elderly'])
+        
+        # High registration intensity periods may indicate outbreaks
+        if registration_intensity > 1.5:
+            if self.faker.random.random() < 0.4:
+                base_age_group = self.faker.random_element(['pediatric', 'young_adult'])
+        
+        return base_age_group
+    
+    def _generate_time_series_medical_conditions(self, age_group: str, gender: str, 
+                                               timestamp: datetime, condition_trends: Dict,
+                                               registration_intensity: float) -> List[str]:
+        """Generate medical conditions with time-based trends and outbreak patterns"""
+        # Start with base condition generation
+        conditions = self._generate_medical_conditions(age_group, gender)
+        
+        # Apply time-based condition trends
+        month = timestamp.month
+        season = self._get_season_from_month(month)
+        
+        # Seasonal condition adjustments
+        seasonal_conditions = {
+            'winter': ['Asthma', 'COPD', 'Depression'],  # Respiratory and SAD
+            'spring': ['Allergies', 'Asthma'],  # Allergy season
+            'summer': [],  # Generally healthier season
+            'fall': ['Allergies', 'Anxiety']  # Back-to-school stress, ragweed
+        }
+        
+        # Add seasonal conditions with higher probability
+        for condition in seasonal_conditions.get(season, []):
+            if condition not in conditions and self.faker.random.random() < 0.15:
+                conditions.append(condition)
+        
+        # Apply outbreak/epidemic patterns based on registration intensity
+        if registration_intensity > 1.8:  # High intensity suggests outbreak
+            outbreak_conditions = ['Asthma', 'Allergies', 'Anxiety']  # Common outbreak-related
+            for condition in outbreak_conditions:
+                if condition not in conditions and self.faker.random.random() < 0.25:
+                    conditions.append(condition)
+        
+        # Apply trending condition effects (conditions that are becoming more common)
+        trending_conditions = self._calculate_trending_conditions(condition_trends, timestamp)
+        for condition, trend_strength in trending_conditions.items():
+            if condition not in conditions and self.faker.random.random() < (0.1 * trend_strength):
+                conditions.append(condition)
+        
+        return conditions
+    
+    def _get_season_from_month(self, month: int) -> str:
+        """Get season from month number"""
+        if month in [12, 1, 2]:
+            return 'winter'
+        elif month in [3, 4, 5]:
+            return 'spring'
+        elif month in [6, 7, 8]:
+            return 'summer'
+        else:  # 9, 10, 11
+            return 'fall'
+    
+    def _calculate_trending_conditions(self, condition_trends: Dict, timestamp: datetime) -> Dict[str, float]:
+        """Calculate trending conditions based on recent registrations"""
+        trending = {}
+        cutoff_time = timestamp - timedelta(days=30)  # Look at last 30 days
+        
+        for condition, trend_history in condition_trends.items():
+            # Count recent occurrences
+            recent_cases = [case for case in trend_history if case['timestamp'] >= cutoff_time]
+            
+            if len(recent_cases) >= 3:  # Minimum threshold for trending
+                # Calculate trend strength based on frequency and intensity
+                avg_intensity = sum(case['intensity'] for case in recent_cases) / len(recent_cases)
+                trend_strength = min(2.0, len(recent_cases) * 0.1 * avg_intensity)
+                trending[condition] = trend_strength
+        
+        return trending
+    
+    def _generate_time_series_visit_history(self, age_group: str, medical_conditions: List[str],
+                                          registration_date: date) -> Dict[str, Any]:
+        """Generate visit history with time-based patterns"""
+        # Start with base visit history
+        base_history = self._generate_visit_history(age_group, medical_conditions)
+        
+        # Adjust based on how long they've been registered
+        days_registered = (datetime.now().date() - registration_date).days
+        
+        # New patients have fewer historical visits
+        if days_registered < 90:  # Less than 3 months
+            base_history['visits_last_year'] = max(1, base_history['visits_last_year'] // 2)
+            base_history['last_visit'] = registration_date
+        elif days_registered < 365:  # Less than 1 year
+            # Scale visits based on registration time
+            scale_factor = days_registered / 365
+            base_history['visits_last_year'] = max(1, int(base_history['visits_last_year'] * scale_factor))
+        
+        # Ensure last visit is not before registration
+        if base_history['last_visit'] < registration_date:
+            base_history['last_visit'] = registration_date + timedelta(
+                days=self.faker.random_int(0, min(30, days_registered))
+            )
+        
+        return base_history
+    
+    def _apply_patient_time_series_correlations(self, data: pd.DataFrame, ts_config) -> pd.DataFrame:
+        """Apply patient-specific time series correlations"""
+        if len(data) < 2:
+            return data
+        
+        # Sort by registration datetime to ensure proper time series order
+        data = data.sort_values('registration_datetime').reset_index(drop=True)
+        
+        # Apply registration intensity persistence (outbreak/epidemic effects)
+        if 'registration_intensity' in data.columns:
+            for i in range(1, len(data)):
+                prev_intensity = data.loc[i-1, 'registration_intensity']
+                curr_intensity = data.loc[i, 'registration_intensity']
+                
+                # Apply intensity correlation (epidemic patterns persist)
+                intensity_persistence = 0.4
+                correlated_intensity = (prev_intensity * intensity_persistence + 
+                                      curr_intensity * (1 - intensity_persistence))
+                
+                data.loc[i, 'registration_intensity'] = round(correlated_intensity, 3)
+        
+        # Apply condition clustering (outbreaks of similar conditions)
+        for i in range(1, len(data)):
+            prev_conditions = data.loc[i-1, 'medical_conditions']
+            curr_conditions = data.loc[i, 'medical_conditions']
+            
+            # Check if registrations are close in time (within 1 day)
+            time_diff = (data.loc[i, 'registration_datetime'] - 
+                        data.loc[i-1, 'registration_datetime']).total_seconds()
+            
+            if time_diff <= 86400:  # Within 1 day
+                # Apply condition correlation (outbreak clustering)
+                if prev_conditions != 'None' and curr_conditions != 'None':
+                    prev_condition_list = prev_conditions.split(', ')
+                    curr_condition_list = curr_conditions.split(', ')
+                    
+                    # Add trending conditions from previous patient
+                    for condition in prev_condition_list:
+                        if (condition not in curr_condition_list and 
+                            condition in ['Asthma', 'Allergies', 'Anxiety'] and  # Common outbreak conditions
+                            self.faker.random.random() < 0.2):
+                            
+                            curr_condition_list.append(condition)
+                    
+                    # Update conditions if changed
+                    if len(curr_condition_list) > len(curr_conditions.split(', ')):
+                        data.loc[i, 'medical_conditions'] = ', '.join(curr_condition_list)
+        
+        # Apply demographic clustering (similar demographics register together)
+        for i in range(1, len(data)):
+            prev_age_group = data.loc[i-1, 'age_group']
+            curr_age_group = data.loc[i, 'age_group']
+            
+            # Check if registrations are close in time (within 2 hours)
+            time_diff = (data.loc[i, 'registration_datetime'] - 
+                        data.loc[i-1, 'registration_datetime']).total_seconds()
+            
+            if time_diff <= 7200:  # Within 2 hours
+                # Apply demographic correlation (family/community registrations)
+                if self.faker.random.random() < 0.15:
+                    data.loc[i, 'age_group'] = prev_age_group
+                    # Regenerate age within the new group
+                    data.loc[i, 'age'] = self._generate_age_for_group(prev_age_group)
+        
+        # Apply insurance clustering (family plans, community programs)
+        for i in range(1, len(data)):
+            prev_insurance = data.loc[i-1, 'insurance_type']
+            curr_insurance = data.loc[i, 'insurance_type']
+            
+            # Check if registrations are close in time (within 4 hours)
+            time_diff = (data.loc[i, 'registration_datetime'] - 
+                        data.loc[i-1, 'registration_datetime']).total_seconds()
+            
+            if time_diff <= 14400:  # Within 4 hours
+                # Apply insurance correlation (family registrations, community programs)
+                if prev_insurance in ['Private', 'Medicaid'] and self.faker.random.random() < 0.25:
+                    data.loc[i, 'insurance_type'] = prev_insurance
+                    # Regenerate insurance ID for the new type
+                    if prev_insurance == 'Medicaid':
+                        data.loc[i, 'insurance_id'] = f"MC{self.faker.random_int(10000000, 99999999)}"
+                    else:
+                        data.loc[i, 'insurance_id'] = f"{self.faker.random_element(['BC', 'AE', 'CI', 'HU'])}{self.faker.random_int(100000000, 999999999)}"
+        
+        return data
     
     def _select_age_group(self) -> str:
         """Select age group based on healthcare distribution"""

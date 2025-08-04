@@ -135,11 +135,21 @@ class CustomerGenerator(BaseGenerator):
         
         Args:
             rows: Number of customers to generate
-            **kwargs: Additional parameters (country, date_range, etc.)
+            **kwargs: Additional parameters (country, date_range, time_series, etc.)
             
         Returns:
             pd.DataFrame: Generated customer data with realistic patterns
         """
+        # Check if time series generation is requested
+        ts_config = self._create_time_series_config(**kwargs)
+        
+        if ts_config:
+            return self._generate_time_series_customers(rows, ts_config, **kwargs)
+        else:
+            return self._generate_snapshot_customers(rows, **kwargs)
+    
+    def _generate_snapshot_customers(self, rows: int, **kwargs) -> pd.DataFrame:
+        """Generate snapshot customer data (random registration dates)"""
         country = kwargs.get('country', 'global')
         date_range = kwargs.get('date_range', None)
         
@@ -223,6 +233,301 @@ class CustomerGenerator(BaseGenerator):
         
         df = pd.DataFrame(data)
         return self._apply_realistic_patterns(df)
+    
+    def _generate_time_series_customers(self, rows: int, ts_config, **kwargs) -> pd.DataFrame:
+        """Generate time series customer data using integrated time series system"""
+        country = kwargs.get('country', 'global')
+        
+        # Generate timestamps from time series config
+        timestamps = self._generate_time_series_timestamps(ts_config, rows)
+        
+        # Generate base registration volume time series
+        base_registration_volume = 10  # Base daily registrations
+        
+        # Create base time series for registration volume
+        volume_series = self.time_series_generator.generate_time_series_base(
+            ts_config,
+            base_value=base_registration_volume,
+            value_range=(base_registration_volume * 0.1, base_registration_volume * 5.0)
+        )
+        
+        data = []
+        
+        # Track registration patterns for realistic correlations
+        registration_history = {}
+        
+        for i, timestamp in enumerate(timestamps):
+            if i >= rows or i >= len(volume_series):
+                break
+            
+            # Get time series volume value (represents registration intensity)
+            registration_intensity = volume_series.iloc[i]['value'] / base_registration_volume
+            
+            # Apply time-based registration patterns
+            registration_date = timestamp.date()
+            
+            # Generate demographic information with time-based trends
+            age_group = self._select_time_series_age_group(timestamp, registration_intensity)
+            age = self._generate_age_for_group(age_group)
+            gender = self._select_gender()
+            income_bracket = self._select_income_bracket(age_group)
+            annual_income = self._generate_income(income_bracket)
+            
+            # Select registration channel with time-based preferences
+            registration_channel = self._select_time_series_registration_channel(timestamp, age_group)
+            
+            # Generate lifecycle stage based on registration date
+            days_since_registration = (datetime.now().date() - registration_date).days
+            lifecycle_stage = self._determine_lifecycle_stage(days_since_registration)
+            
+            # Generate activity metrics based on lifecycle and time patterns
+            activity_data = self._generate_time_series_activity_metrics(
+                lifecycle_stage, annual_income, timestamp, registration_intensity
+            )
+            
+            # Determine customer segment
+            segment = self._determine_segment(activity_data['lifetime_value'], activity_data['total_orders'])
+            
+            # Generate personal information
+            if gender == 'male':
+                first_name = self.faker.first_name_male()
+            elif gender == 'female':
+                first_name = self.faker.first_name_female()
+            else:
+                first_name = self.faker.first_name()
+            
+            last_name = self.faker.last_name()
+            email = self._generate_email(first_name, last_name)
+            phone = self.faker.phone_number()
+            
+            # Generate address information
+            address = self._generate_address(country)
+            
+            # Generate preferences with time-based trends
+            preferences = self._generate_time_series_preferences(age_group, gender, timestamp)
+            
+            customer = {
+                'customer_id': f'CUST_{i+1:06d}',
+                'first_name': first_name,
+                'last_name': last_name,
+                'email': email,
+                'phone': phone,
+                'gender': gender,
+                'age': age,
+                'age_group': age_group,
+                'annual_income': annual_income,
+                'income_bracket': income_bracket,
+                'registration_date': registration_date,
+                'registration_datetime': timestamp,
+                'registration_channel': registration_channel,
+                'lifecycle_stage': lifecycle_stage,
+                'segment': segment,
+                'total_orders': activity_data['total_orders'],
+                'lifetime_value': activity_data['lifetime_value'],
+                'avg_order_value': activity_data['avg_order_value'],
+                'last_order_date': activity_data['last_order_date'],
+                'days_since_last_order': activity_data['days_since_last_order'],
+                'address_line1': address['street'],
+                'city': address['city'],
+                'state_province': address['state'],
+                'postal_code': address['postal_code'],
+                'country': address['country'],
+                'preferred_contact': preferences['contact_method'],
+                'marketing_opt_in': preferences['marketing_opt_in'],
+                'preferred_category': preferences['product_category'],
+                'registration_intensity': round(registration_intensity, 3)
+            }
+            
+            # Track registration patterns for correlation
+            month_key = f"{timestamp.year}-{timestamp.month:02d}"
+            if month_key not in registration_history:
+                registration_history[month_key] = []
+            registration_history[month_key].append({
+                'timestamp': timestamp,
+                'age_group': age_group,
+                'channel': registration_channel,
+                'intensity': registration_intensity
+            })
+            
+            data.append(customer)
+        
+        df = pd.DataFrame(data)
+        
+        # Add temporal relationships using base generator functionality
+        df = self._add_temporal_relationships(df, ts_config)
+        
+        # Apply customer-specific time series correlations
+        df = self._apply_customer_time_series_correlations(df, ts_config)
+        
+        return self._apply_realistic_patterns(df)
+    
+    def _select_time_series_age_group(self, timestamp: datetime, registration_intensity: float) -> str:
+        """Select age group with time-based trends"""
+        # Base age group selection
+        base_age_group = self._select_age_group()
+        
+        # Apply time-based trends
+        hour = timestamp.hour
+        day_of_week = timestamp.weekday()
+        month = timestamp.month
+        
+        # Time-based age group preferences
+        if 9 <= hour <= 17:  # Business hours - more Gen X and Boomers
+            if base_age_group in ['gen_z', 'millennial'] and self.faker.random.random() < 0.3:
+                base_age_group = self.faker.random_element(['gen_x', 'boomer'])
+        elif 18 <= hour <= 23:  # Evening - more Gen Z and Millennials
+            if base_age_group in ['gen_x', 'boomer'] and self.faker.random.random() < 0.4:
+                base_age_group = self.faker.random_element(['gen_z', 'millennial'])
+        
+        # Weekend patterns - more leisure-oriented demographics
+        if day_of_week >= 5:  # Weekend
+            if self.faker.random.random() < 0.2:
+                base_age_group = self.faker.random_element(['millennial', 'gen_x'])
+        
+        # Seasonal patterns
+        if month in [11, 12]:  # Holiday season - all age groups more active
+            pass  # Keep base selection
+        elif month in [6, 7, 8]:  # Summer - younger demographics more active
+            if base_age_group in ['gen_x', 'boomer'] and self.faker.random.random() < 0.3:
+                base_age_group = self.faker.random_element(['gen_z', 'millennial'])
+        
+        return base_age_group
+    
+    def _select_time_series_registration_channel(self, timestamp: datetime, age_group: str) -> str:
+        """Select registration channel with time-based patterns"""
+        # Base channel selection
+        base_channel = self._select_registration_channel()
+        
+        # Apply time-based channel preferences
+        hour = timestamp.hour
+        day_of_week = timestamp.weekday()
+        
+        # Time-based channel adjustments
+        if 9 <= hour <= 17:  # Business hours
+            # More organic search and direct traffic
+            if base_channel == 'social_media' and self.faker.random.random() < 0.3:
+                base_channel = 'organic_search'
+        elif 18 <= hour <= 23:  # Evening
+            # More social media and email marketing
+            if base_channel == 'organic_search' and self.faker.random.random() < 0.4:
+                base_channel = 'social_media'
+        
+        # Weekend patterns
+        if day_of_week >= 5:  # Weekend
+            # More social media and referrals
+            if base_channel in ['organic_search', 'paid_ads'] and self.faker.random.random() < 0.3:
+                base_channel = self.faker.random_element(['social_media', 'referral'])
+        
+        # Age group preferences
+        if age_group in ['gen_z', 'millennial']:
+            if base_channel == 'direct' and self.faker.random.random() < 0.5:
+                base_channel = 'social_media'
+        elif age_group in ['gen_x', 'boomer']:
+            if base_channel == 'social_media' and self.faker.random.random() < 0.4:
+                base_channel = self.faker.random_element(['organic_search', 'email_marketing'])
+        
+        return base_channel
+    
+    def _generate_time_series_activity_metrics(self, lifecycle_stage: str, annual_income: int,
+                                             timestamp: datetime, registration_intensity: float) -> Dict[str, Any]:
+        """Generate activity metrics with time series patterns"""
+        # Start with base activity metrics
+        base_activity = self._generate_activity_metrics(lifecycle_stage, annual_income)
+        
+        # Apply time-based adjustments
+        month = timestamp.month
+        
+        # Seasonal activity adjustments
+        seasonal_multiplier = self.monthly_registration_patterns.get(month, 1.0)
+        
+        # Apply registration intensity (higher intensity periods = more engaged customers)
+        intensity_multiplier = 0.8 + (registration_intensity * 0.4)  # Scale to 0.8-1.2 range
+        
+        # Adjust metrics
+        adjusted_orders = max(1, int(base_activity['total_orders'] * seasonal_multiplier * intensity_multiplier))
+        adjusted_value = max(50, int(base_activity['lifetime_value'] * seasonal_multiplier * intensity_multiplier))
+        
+        return {
+            'total_orders': adjusted_orders,
+            'lifetime_value': adjusted_value,
+            'avg_order_value': round(adjusted_value / adjusted_orders, 2),
+            'last_order_date': base_activity['last_order_date'],
+            'days_since_last_order': base_activity['days_since_last_order']
+        }
+    
+    def _generate_time_series_preferences(self, age_group: str, gender: str, timestamp: datetime) -> Dict[str, Any]:
+        """Generate preferences with time-based trends"""
+        # Start with base preferences
+        base_preferences = self._generate_preferences(age_group, gender)
+        
+        # Apply time-based trends
+        year = timestamp.year
+        month = timestamp.month
+        
+        # Technology adoption trends over time
+        if year >= 2020:  # Recent years - higher app notification preference
+            if base_preferences['contact_method'] == 'mail' and self.faker.random.random() < 0.6:
+                base_preferences['contact_method'] = 'app_notification'
+        
+        # Seasonal marketing opt-in patterns
+        if month in [11, 12]:  # Holiday season - higher opt-in rates
+            if not base_preferences['marketing_opt_in'] and self.faker.random.random() < 0.3:
+                base_preferences['marketing_opt_in'] = True
+        
+        return base_preferences
+    
+    def _apply_customer_time_series_correlations(self, data: pd.DataFrame, ts_config) -> pd.DataFrame:
+        """Apply customer-specific time series correlations"""
+        if len(data) < 2:
+            return data
+        
+        # Sort by registration datetime to ensure proper time series order
+        data = data.sort_values('registration_datetime').reset_index(drop=True)
+        
+        # Apply registration intensity persistence (viral/word-of-mouth effects)
+        if 'registration_intensity' in data.columns:
+            for i in range(1, len(data)):
+                prev_intensity = data.loc[i-1, 'registration_intensity']
+                curr_intensity = data.loc[i, 'registration_intensity']
+                
+                # Apply intensity correlation (viral registration effects)
+                intensity_persistence = 0.3
+                correlated_intensity = (prev_intensity * intensity_persistence + 
+                                      curr_intensity * (1 - intensity_persistence))
+                
+                data.loc[i, 'registration_intensity'] = round(correlated_intensity, 3)
+        
+        # Apply channel correlation (similar channels cluster in time)
+        for i in range(1, len(data)):
+            prev_channel = data.loc[i-1, 'registration_channel']
+            curr_channel = data.loc[i, 'registration_channel']
+            
+            # Check if registrations are close in time (within 1 day)
+            time_diff = (data.loc[i, 'registration_datetime'] - 
+                        data.loc[i-1, 'registration_datetime']).total_seconds()
+            
+            if time_diff <= 86400:  # Within 1 day
+                # Apply channel correlation (campaigns tend to cluster)
+                if prev_channel in ['paid_ads', 'email_marketing'] and self.faker.random.random() < 0.4:
+                    data.loc[i, 'registration_channel'] = prev_channel
+        
+        # Apply demographic clustering (similar demographics register together)
+        for i in range(1, len(data)):
+            prev_age_group = data.loc[i-1, 'age_group']
+            curr_age_group = data.loc[i, 'age_group']
+            
+            # Check if registrations are close in time (within 2 hours)
+            time_diff = (data.loc[i, 'registration_datetime'] - 
+                        data.loc[i-1, 'registration_datetime']).total_seconds()
+            
+            if time_diff <= 7200:  # Within 2 hours
+                # Apply demographic correlation (social influence)
+                if self.faker.random.random() < 0.25:
+                    data.loc[i, 'age_group'] = prev_age_group
+                    # Regenerate age within the new group
+                    data.loc[i, 'age'] = self._generate_age_for_group(prev_age_group)
+        
+        return data
     
     def _select_age_group(self) -> str:
         """Select age group based on distribution"""

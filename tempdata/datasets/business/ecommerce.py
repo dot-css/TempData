@@ -219,11 +219,21 @@ class EcommerceGenerator(BaseGenerator):
         
         Args:
             rows: Number of orders to generate
-            **kwargs: Additional parameters (country, date_range, etc.)
+            **kwargs: Additional parameters (country, date_range, time_series, etc.)
             
         Returns:
             pd.DataFrame: Generated ecommerce data with realistic patterns
         """
+        # Check if time series generation is requested
+        ts_config = self._create_time_series_config(**kwargs)
+        
+        if ts_config:
+            return self._generate_time_series_ecommerce(rows, ts_config, **kwargs)
+        else:
+            return self._generate_snapshot_ecommerce(rows, **kwargs)
+    
+    def _generate_snapshot_ecommerce(self, rows: int, **kwargs) -> pd.DataFrame:
+        """Generate snapshot ecommerce data (random order dates)"""
         country = kwargs.get('country', 'global')
         date_range = kwargs.get('date_range', None)
         include_abandoned = kwargs.get('include_abandoned', False)
@@ -339,6 +349,633 @@ class EcommerceGenerator(BaseGenerator):
         
         df = pd.DataFrame(data)
         return self._apply_realistic_patterns(df)
+    
+    def _generate_time_series_ecommerce(self, rows: int, ts_config, **kwargs) -> pd.DataFrame:
+        """Generate time series ecommerce data using integrated time series system"""
+        country = kwargs.get('country', 'global')
+        include_abandoned = kwargs.get('include_abandoned', False)
+        
+        # Generate timestamps from time series config
+        timestamps = self._generate_time_series_timestamps(ts_config, rows)
+        
+        # Generate base order volume time series
+        base_order_volume = 50  # Base daily order volume
+        
+        # Create base time series for order volume
+        volume_series = self.time_series_generator.generate_time_series_base(
+            ts_config,
+            base_value=base_order_volume,
+            value_range=(base_order_volume * 0.1, base_order_volume * 4.0)
+        )
+        
+        data = []
+        customer_order_history = {}  # Track repeat customers
+        product_sales_history = {}  # Track product trends
+        
+        for i, timestamp in enumerate(timestamps):
+            if i >= rows or i >= len(volume_series):
+                break
+            
+            # Get time series volume value (represents order intensity)
+            order_intensity = volume_series.iloc[i]['value'] / base_order_volume
+            
+            # Apply time-based order patterns
+            order_date = timestamp.date()
+            order_hour = timestamp.hour
+            
+            # Determine if this is a repeat customer with time-based patterns
+            repeat_probability = self._calculate_time_series_repeat_probability(
+                timestamp, customer_order_history, order_intensity
+            )
+            is_repeat_customer = self.faker.random.random() < repeat_probability
+            
+            if is_repeat_customer and customer_order_history:
+                # Select existing customer with recency bias
+                customer_id = self._select_time_series_customer(customer_order_history, timestamp)
+                customer_order_history[customer_id]['order_count'] += 1
+                customer_order_history[customer_id]['last_order'] = timestamp
+            else:
+                # New customer
+                customer_id = f'CUST_{self.faker.random_int(1, 50000):06d}'
+                customer_order_history[customer_id] = {
+                    'order_count': 1,
+                    'first_order': timestamp,
+                    'last_order': timestamp
+                }
+            
+            # Generate order items with time-based trends
+            order_items = self._generate_time_series_order_items(
+                order_date, timestamp, product_sales_history, order_intensity
+            )
+            
+            # Calculate totals with time-based adjustments
+            subtotal = sum(item['price'] * item['quantity'] for item in order_items)
+            total_weight = sum(item['weight'] * item['quantity'] for item in order_items)
+            
+            # Apply time-based pricing adjustments
+            subtotal = self._apply_time_series_pricing(subtotal, timestamp, order_intensity)
+            
+            # Select shipping method with time-based preferences
+            shipping_method = self._select_time_series_shipping_method(
+                subtotal, total_weight, timestamp, order_intensity
+            )
+            shipping_cost = self._calculate_shipping_cost(shipping_method, total_weight, subtotal)
+            
+            # Calculate taxes
+            tax_rate = 0.08 if country == 'united_states' else 0.10
+            tax_amount = round(subtotal * tax_rate, 2)
+            
+            total_amount = subtotal + shipping_cost + tax_amount
+            
+            # Determine order status with time-based logic
+            order_status = self._select_time_series_order_status(timestamp)
+            
+            # Generate payment information with time trends
+            payment_method = self._select_time_series_payment_method(timestamp, total_amount)
+            
+            # Generate shipping address
+            shipping_address = self._generate_shipping_address(country)
+            
+            # Check for cart abandonment with time-based patterns
+            abandonment_probability = self._calculate_time_series_abandonment_probability(
+                timestamp, order_intensity, total_amount
+            )
+            is_abandoned = (include_abandoned and 
+                          self.faker.random.random() < abandonment_probability)
+            
+            if is_abandoned:
+                order_status = 'abandoned'
+                total_amount = 0
+                shipping_cost = 0
+                tax_amount = 0
+            
+            # Generate order record
+            order = {
+                'order_id': f'ORD_{i+1:08d}',
+                'customer_id': customer_id,
+                'order_date': order_date,
+                'order_datetime': timestamp,
+                'order_status': order_status,
+                'subtotal': subtotal,
+                'shipping_cost': shipping_cost,
+                'tax_amount': tax_amount,
+                'total_amount': total_amount,
+                'payment_method': payment_method,
+                'shipping_method': shipping_method,
+                'estimated_delivery_days': self._get_delivery_estimate(shipping_method),
+                'total_items': len(order_items),
+                'total_quantity': sum(item['quantity'] for item in order_items),
+                'total_weight_kg': total_weight,
+                'primary_category': order_items[0]['category'] if order_items else 'unknown',
+                'shipping_country': shipping_address['country'],
+                'shipping_city': shipping_address['city'],
+                'shipping_postal_code': shipping_address['postal_code'],
+                'is_repeat_customer': customer_order_history[customer_id]['order_count'] > 1,
+                'customer_order_number': customer_order_history[customer_id]['order_count'],
+                'is_gift': self._calculate_time_series_gift_probability(timestamp),
+                'order_intensity': round(order_intensity, 3)
+            }
+            
+            # Handle discount logic with time-based patterns
+            discount_probability = self._calculate_time_series_discount_probability(
+                timestamp, order_intensity, is_repeat_customer
+            )
+            has_discount = self.faker.random.random() < discount_probability
+            order['has_discount'] = has_discount
+            order['discount_amount'] = round(subtotal * 0.1, 2) if has_discount else 0.0
+            
+            # Add item details
+            for idx, item in enumerate(order_items[:3]):
+                order[f'item_{idx+1}_name'] = item['name']
+                order[f'item_{idx+1}_category'] = item['category']
+                order[f'item_{idx+1}_price'] = item['price']
+                order[f'item_{idx+1}_quantity'] = item['quantity']
+            
+            # Fill empty item slots
+            for idx in range(len(order_items), 3):
+                order[f'item_{idx+1}_name'] = None
+                order[f'item_{idx+1}_category'] = None
+                order[f'item_{idx+1}_price'] = None
+                order[f'item_{idx+1}_quantity'] = None
+            
+            data.append(order)
+        
+        df = pd.DataFrame(data)
+        
+        # Add temporal relationships using base generator functionality
+        df = self._add_temporal_relationships(df, ts_config)
+        
+        # Apply ecommerce-specific time series correlations
+        df = self._apply_ecommerce_time_series_correlations(df, ts_config)
+        
+        return self._apply_realistic_patterns(df)
+    
+    def _calculate_time_series_repeat_probability(self, timestamp: datetime, 
+                                                customer_history: Dict, order_intensity: float) -> float:
+        """Calculate repeat customer probability with time-based patterns"""
+        base_probability = self.repeat_customer_rate
+        
+        # Time-based adjustments
+        hour = timestamp.hour
+        day_of_week = timestamp.weekday()
+        month = timestamp.month
+        
+        # Evening and weekend orders more likely to be repeat customers
+        if 18 <= hour <= 22:
+            base_probability *= 1.3
+        if day_of_week >= 5:  # Weekend
+            base_probability *= 1.2
+        
+        # Holiday season increases repeat purchases
+        if month in [11, 12]:
+            base_probability *= 1.4
+        
+        # Order intensity correlation (busy periods = more repeat customers)
+        intensity_multiplier = 0.8 + (order_intensity * 0.4)
+        base_probability *= intensity_multiplier
+        
+        # Customer base growth effect (more customers = higher repeat probability)
+        if len(customer_history) > 100:
+            base_probability *= 1.1
+        
+        return min(0.8, base_probability)
+    
+    def _select_time_series_customer(self, customer_history: Dict, timestamp: datetime) -> str:
+        """Select existing customer with recency bias"""
+        # Weight customers by recency and order frequency
+        weighted_customers = []
+        
+        for customer_id, data in customer_history.items():
+            # Recency weight (more recent customers more likely to order again)
+            days_since_last = (timestamp - data['last_order']).days
+            recency_weight = max(0.1, 1.0 / (1 + days_since_last * 0.1))
+            
+            # Frequency weight (frequent customers more likely to order again)
+            frequency_weight = min(2.0, 1.0 + data['order_count'] * 0.1)
+            
+            total_weight = recency_weight * frequency_weight
+            weighted_customers.extend([customer_id] * int(total_weight * 10))
+        
+        return self.faker.random_element(weighted_customers if weighted_customers else list(customer_history.keys()))
+    
+    def _generate_time_series_order_items(self, order_date: date, timestamp: datetime,
+                                        product_history: Dict, order_intensity: float) -> List[Dict[str, Any]]:
+        """Generate order items with time-based trends and product correlations"""
+        # Determine order size with time-based patterns
+        order_size = self._select_time_series_order_size(timestamp, order_intensity)
+        
+        # Get seasonal preferences
+        season = self._get_season(order_date)
+        preferred_categories = self.seasonal_product_preferences.get(season, self.product_categories)
+        
+        items = []
+        selected_categories = []
+        
+        for i in range(order_size):
+            if i == 0:
+                # First item - consider trending products and seasonal preferences
+                category = self._select_time_series_category(
+                    preferred_categories, product_history, timestamp
+                )
+            else:
+                # Subsequent items - use correlation patterns
+                if selected_categories:
+                    last_category = selected_categories[-1]
+                    correlated_categories = self.product_correlations.get(last_category, [last_category])
+                    category = self.faker.random_element(correlated_categories)
+                else:
+                    category = self.faker.random_element(self.product_categories)
+            
+            # Select product from category with trending bias
+            product = self._select_time_series_product(category, product_history, timestamp)
+            
+            # Generate quantity with time-based patterns
+            quantity = self._select_time_series_quantity(timestamp, order_intensity)
+            
+            # Apply time-based pricing
+            price_variation = self._calculate_time_series_price_variation(timestamp, order_intensity)
+            final_price = round(product['base_price'] * price_variation, 2)
+            
+            item = {
+                'name': product['name'],
+                'category': product['category'],
+                'price': final_price,
+                'quantity': quantity,
+                'weight': product['weight_kg']
+            }
+            
+            items.append(item)
+            selected_categories.append(category)
+            
+            # Track product sales for trending
+            if product['name'] not in product_history:
+                product_history[product['name']] = []
+            product_history[product['name']].append({
+                'timestamp': timestamp,
+                'price': final_price,
+                'quantity': quantity
+            })
+        
+        return items
+    
+    def _select_time_series_order_size(self, timestamp: datetime, order_intensity: float) -> int:
+        """Select order size with time-based patterns"""
+        base_size = self._select_order_size()
+        
+        # Time-based adjustments
+        hour = timestamp.hour
+        month = timestamp.month
+        
+        # Evening orders tend to be larger (leisure shopping)
+        if 18 <= hour <= 22:
+            if self.faker.random.random() < 0.3:
+                base_size += 1
+        
+        # Holiday season orders tend to be larger
+        if month in [11, 12]:
+            if self.faker.random.random() < 0.4:
+                base_size += self.faker.random_int(1, 2)
+        
+        # High intensity periods may have larger orders
+        if order_intensity > 1.5:
+            if self.faker.random.random() < 0.2:
+                base_size += 1
+        
+        return min(7, max(1, base_size))
+    
+    def _select_time_series_category(self, preferred_categories: List[str], 
+                                   product_history: Dict, timestamp: datetime) -> str:
+        """Select category considering trends and time patterns"""
+        # Calculate trending categories based on recent sales
+        trending_categories = self._calculate_trending_categories(product_history, timestamp)
+        
+        # Combine seasonal preferences with trending data
+        weighted_categories = []
+        
+        for category in preferred_categories:
+            weight = 2  # Base weight for seasonal preference
+            
+            # Add trending weight
+            if category in trending_categories:
+                weight += trending_categories[category]
+            
+            weighted_categories.extend([category] * weight)
+        
+        return self.faker.random_element(weighted_categories if weighted_categories else preferred_categories)
+    
+    def _calculate_trending_categories(self, product_history: Dict, timestamp: datetime) -> Dict[str, int]:
+        """Calculate trending categories based on recent sales"""
+        trending = {}
+        cutoff_time = timestamp - timedelta(days=7)  # Look at last 7 days
+        
+        for product_name, sales_history in product_history.items():
+            # Find product category
+            product = next((p for p in self.products if p['name'] == product_name), None)
+            if not product:
+                continue
+            
+            category = product['category']
+            
+            # Count recent sales
+            recent_sales = [s for s in sales_history if s['timestamp'] >= cutoff_time]
+            
+            if recent_sales:
+                if category not in trending:
+                    trending[category] = 0
+                trending[category] += len(recent_sales)
+        
+        return trending
+    
+    def _select_time_series_product(self, category: str, product_history: Dict, 
+                                  timestamp: datetime) -> Dict[str, Any]:
+        """Select product with trending bias"""
+        category_products = [p for p in self.products if p['category'] == category]
+        if not category_products:
+            return self.faker.random_element(self.products)
+        
+        # Weight products by recent sales (trending products)
+        weighted_products = []
+        
+        for product in category_products:
+            weight = 1  # Base weight
+            
+            # Add trending weight
+            if product['name'] in product_history:
+                cutoff_time = timestamp - timedelta(days=3)  # Recent trend window
+                recent_sales = [s for s in product_history[product['name']] 
+                              if s['timestamp'] >= cutoff_time]
+                if recent_sales:
+                    weight += len(recent_sales)
+            
+            weighted_products.extend([product] * weight)
+        
+        return self.faker.random_element(weighted_products)
+    
+    def _select_time_series_quantity(self, timestamp: datetime, order_intensity: float) -> int:
+        """Select quantity with time-based patterns"""
+        base_quantity = 1
+        
+        # Higher intensity periods may have higher quantities
+        if order_intensity > 1.5 and self.faker.random.random() < 0.3:
+            base_quantity += 1
+        
+        # Holiday season bulk buying
+        if timestamp.month in [11, 12] and self.faker.random.random() < 0.25:
+            base_quantity += self.faker.random_int(1, 2)
+        
+        # Weekend bulk shopping
+        if timestamp.weekday() >= 5 and self.faker.random.random() < 0.2:
+            base_quantity += 1
+        
+        return min(5, base_quantity)
+    
+    def _calculate_time_series_price_variation(self, timestamp: datetime, order_intensity: float) -> float:
+        """Calculate price variation with time-based patterns"""
+        base_variation = self.faker.random.uniform(0.9, 1.1)
+        
+        # High demand periods (high intensity) = higher prices
+        if order_intensity > 1.5:
+            base_variation *= self.faker.random.uniform(1.0, 1.15)
+        elif order_intensity < 0.7:
+            base_variation *= self.faker.random.uniform(0.85, 1.0)
+        
+        # Holiday season pricing
+        if timestamp.month in [11, 12]:
+            # Mix of sales and premium pricing
+            if self.faker.random.random() < 0.3:  # 30% chance of sale
+                base_variation *= self.faker.random.uniform(0.7, 0.9)
+            else:
+                base_variation *= self.faker.random.uniform(1.0, 1.1)
+        
+        return base_variation
+    
+    def _apply_time_series_pricing(self, subtotal: float, timestamp: datetime, 
+                                 order_intensity: float) -> float:
+        """Apply time-based pricing adjustments to subtotal"""
+        # Peak demand pricing
+        if order_intensity > 2.0:
+            subtotal *= self.faker.random.uniform(1.02, 1.08)
+        
+        # Holiday season adjustments
+        if timestamp.month in [11, 12]:
+            # Black Friday / Cyber Monday effects
+            if timestamp.month == 11 and timestamp.day >= 20:
+                if self.faker.random.random() < 0.4:  # 40% chance of discount
+                    subtotal *= self.faker.random.uniform(0.8, 0.95)
+        
+        return round(subtotal, 2)
+    
+    def _select_time_series_shipping_method(self, order_value: float, total_weight: float,
+                                          timestamp: datetime, order_intensity: float) -> str:
+        """Select shipping method with time-based preferences"""
+        base_method = self._select_shipping_method(order_value, total_weight)
+        
+        # Time-based shipping preferences
+        hour = timestamp.hour
+        day_of_week = timestamp.weekday()
+        
+        # Late orders more likely to use express shipping
+        if hour >= 20:
+            if base_method == 'standard' and self.faker.random.random() < 0.3:
+                base_method = 'express'
+        
+        # Friday orders more likely to use express (weekend delivery)
+        if day_of_week == 4:  # Friday
+            if base_method == 'standard' and self.faker.random.random() < 0.25:
+                base_method = 'express'
+        
+        # High intensity periods = more express shipping
+        if order_intensity > 1.5:
+            if base_method == 'standard' and self.faker.random.random() < 0.2:
+                base_method = 'express'
+        
+        return base_method
+    
+    def _select_time_series_order_status(self, timestamp: datetime) -> str:
+        """Select order status with time-based logic"""
+        days_ago = (datetime.now() - timestamp).days
+        
+        # Same logic as base method but with time-aware adjustments
+        if days_ago < 1:
+            status_dist = {'processing': 0.6, 'shipped': 0.3, 'delivered': 0.05, 'cancelled': 0.05}
+        elif days_ago < 3:
+            status_dist = {'processing': 0.2, 'shipped': 0.5, 'delivered': 0.25, 'cancelled': 0.05}
+        elif days_ago < 7:
+            status_dist = {'processing': 0.05, 'shipped': 0.2, 'delivered': 0.7, 'cancelled': 0.03, 'returned': 0.02}
+        else:
+            status_dist = {'delivered': 0.85, 'cancelled': 0.05, 'returned': 0.1}
+        
+        return self._weighted_choice(status_dist)
+    
+    def _select_time_series_payment_method(self, timestamp: datetime, total_amount: float) -> str:
+        """Select payment method with time-based trends"""
+        base_method = self._select_payment_method()
+        
+        # Time-based payment trends
+        year = timestamp.year
+        
+        # Digital payment adoption over time
+        if year >= 2020:
+            if base_method == 'credit_card' and self.faker.random.random() < 0.3:
+                base_method = self.faker.random_element(['paypal', 'apple_pay', 'google_pay'])
+        
+        # High-value orders more likely to use secure methods
+        if total_amount > 500:
+            if base_method in ['apple_pay', 'google_pay'] and self.faker.random.random() < 0.4:
+                base_method = 'credit_card'
+        
+        return base_method
+    
+    def _calculate_time_series_abandonment_probability(self, timestamp: datetime,
+                                                     order_intensity: float, total_amount: float) -> float:
+        """Calculate cart abandonment probability with time-based patterns"""
+        base_probability = self.cart_abandonment_rate
+        
+        # Time-based adjustments
+        hour = timestamp.hour
+        
+        # Late night orders more likely to be abandoned
+        if hour >= 23 or hour <= 5:
+            base_probability *= 1.5
+        
+        # High-value orders more likely to be abandoned
+        if total_amount > 200:
+            base_probability *= 1.3
+        elif total_amount > 500:
+            base_probability *= 1.6
+        
+        # High intensity periods = lower abandonment (urgency effect)
+        if order_intensity > 1.5:
+            base_probability *= 0.8
+        
+        return min(0.5, base_probability)
+    
+    def _calculate_time_series_gift_probability(self, timestamp: datetime) -> bool:
+        """Calculate gift probability with seasonal patterns"""
+        base_probability = 0.12
+        
+        # Seasonal adjustments
+        month = timestamp.month
+        day = timestamp.day
+        
+        # Holiday season
+        if month == 12:
+            base_probability = 0.4
+        elif month == 11:
+            base_probability = 0.25
+        elif month == 2 and day <= 14:  # Valentine's Day
+            base_probability = 0.3
+        elif month == 5 and day >= 8 and day <= 14:  # Mother's Day
+            base_probability = 0.35
+        
+        return self.faker.random.random() < base_probability
+    
+    def _calculate_time_series_discount_probability(self, timestamp: datetime,
+                                                  order_intensity: float, is_repeat: bool) -> float:
+        """Calculate discount probability with time-based patterns"""
+        base_probability = 0.25
+        
+        # Time-based discount patterns
+        month = timestamp.month
+        day_of_week = timestamp.weekday()
+        
+        # Holiday season discounts
+        if month in [11, 12]:
+            base_probability = 0.45
+        
+        # Weekend promotions
+        if day_of_week >= 5:
+            base_probability *= 1.2
+        
+        # Low intensity periods = more discounts to drive sales
+        if order_intensity < 0.8:
+            base_probability *= 1.3
+        
+        # Repeat customer discounts
+        if is_repeat:
+            base_probability *= 1.1
+        
+        return min(0.6, base_probability)
+    
+    def _weighted_choice(self, choices_dict: Dict[str, float]) -> str:
+        """Make weighted choice from dictionary"""
+        choices = list(choices_dict.keys())
+        weights = list(choices_dict.values())
+        
+        cumulative_weights = []
+        total = 0
+        for weight in weights:
+            total += weight
+            cumulative_weights.append(total)
+        
+        rand_val = self.faker.random.uniform(0, total)
+        for i, cum_weight in enumerate(cumulative_weights):
+            if rand_val <= cum_weight:
+                return choices[i]
+        
+        return choices[-1]
+    
+    def _apply_ecommerce_time_series_correlations(self, data: pd.DataFrame, ts_config) -> pd.DataFrame:
+        """Apply ecommerce-specific time series correlations"""
+        if len(data) < 2:
+            return data
+        
+        # Sort by order datetime to ensure proper time series order
+        data = data.sort_values('order_datetime').reset_index(drop=True)
+        
+        # Apply order intensity persistence (viral/promotional effects)
+        if 'order_intensity' in data.columns:
+            for i in range(1, len(data)):
+                prev_intensity = data.loc[i-1, 'order_intensity']
+                curr_intensity = data.loc[i, 'order_intensity']
+                
+                # Apply intensity correlation (promotional campaigns persist)
+                intensity_persistence = 0.4
+                correlated_intensity = (prev_intensity * intensity_persistence + 
+                                      curr_intensity * (1 - intensity_persistence))
+                
+                data.loc[i, 'order_intensity'] = round(correlated_intensity, 3)
+        
+        # Apply customer behavior correlation (repeat customers cluster)
+        for i in range(1, len(data)):
+            prev_customer = data.loc[i-1, 'customer_id']
+            curr_customer = data.loc[i, 'customer_id']
+            
+            # Check if orders are close in time (within 1 hour)
+            time_diff = (data.loc[i, 'order_datetime'] - 
+                        data.loc[i-1, 'order_datetime']).total_seconds()
+            
+            if time_diff <= 3600:  # Within 1 hour
+                # Apply customer correlation (word-of-mouth effects)
+                if prev_customer != curr_customer and self.faker.random.random() < 0.15:
+                    # Similar order patterns for customers ordering at similar times
+                    prev_category = data.loc[i-1, 'primary_category']
+                    if self.faker.random.random() < 0.3:
+                        data.loc[i, 'primary_category'] = prev_category
+        
+        # Apply product category clustering (trending products)
+        category_momentum = {}
+        for i in range(len(data)):
+            category = data.loc[i, 'primary_category']
+            timestamp = data.loc[i, 'order_datetime']
+            
+            # Track category momentum
+            if category not in category_momentum:
+                category_momentum[category] = []
+            category_momentum[category].append(timestamp)
+            
+            # Apply momentum effect (trending categories continue to trend)
+            if len(category_momentum[category]) > 3:
+                recent_orders = [t for t in category_momentum[category] 
+                               if (timestamp - t).total_seconds() <= 7200]  # Last 2 hours
+                
+                if len(recent_orders) >= 3:  # Category is trending
+                    # Boost order amount for trending categories
+                    current_amount = data.loc[i, 'total_amount']
+                    trending_boost = 1.05  # 5% boost
+                    data.loc[i, 'total_amount'] = round(current_amount * trending_boost, 2)
+        
+        return data
     
     def _select_order_hour(self) -> int:
         """Select order hour based on realistic patterns"""
