@@ -1,0 +1,201 @@
+{
+  "interests_categories": {
+    "technology": {
+      "interests": ["programming", "AI", "machine learning", "web development", "mobile apps", "cybersecurity", "blockchain", "data science", "cloud computing", "IoT"],
+      "bio_keywords": ["tech enthusiast", "developer", "coder", "innovation", "digital", "startup", "software", "engineer"],
+      "hashtags": ["#tech", "#coding", "#programming", "#AI", "#innovation", "#developer", "#startup", "#digital"]
+    },
+    "fitness": {
+      "interests": ["running", "yoga", "weightlifting", "cycling", "swimming", "hiking", "crossfit", "pilates", "martial arts", "rock climbing"],
+      "bio_keywords": ["fitness lover", "athlete", "runner", "gym", "healthy lifestyle", "wellness", "trainer", "active"],
+      "hashtags": ["#fitness", "#health", "#workout", "#running", "#yoga", "#gym", "#wellness", "#active"]
+    },
+    "travel": {
+      "interests": ["backpacking", "photography", "cultural exploration", "adventure travel", "food tourism", "solo travel", "luxury travel", "eco-tourism", "city breaks", "road trips"],
+      "bio_keywords": ["wanderlust", "traveler", "explorer", "adventure", "nomad", "photographer", "culture", "journey"],
+      "hashtags": ["#travel", "#wanderlust", "#adventure", "#explore", "#photography", "#culture", "#nomad", "#journey"]
+    },
+    "food": {
+      "interests": ["cooking", "baking", "wine tasting", "craft beer", "vegan cuisine", "street food", "fine dining", "food photography", "recipe development", "nutrition"],
+      "bio_keywords": ["foodie", "chef", "cook", "baker", "culinary", "recipes", "nutrition", "gourmet"],
+      "hashtags": ["#food", "#cooking", "#foodie", "#recipes", "#chef", "#culinary", "#nutrition", "#gourmet"]
+    },
+    "arts": {
+      "interests": ["painting", "drawing", "sculpture", "photography", "music", "writing", "theater", "dance", "film", "design"],
+      "bio_keywords": ["artist", "creative", "designer", "photographer", "musician", "writer", "painter", "creator"],
+      "hashtags": ["#art", "#creative", "#design", "#photography", "#music", "#artist", "#painting", "#writer"]
+    },
+    "business": {
+      "interests": ["entrepreneurship", "marketing", "finance", "leadership", "networking", "investing", "consulting", "sales", "strategy", "innovation"],
+      "bio_keywords": ["entrepreneur", "CEO", "founder", "business", "leader", "consultant", "investor", "professional"],
+      "hashtags": ["#business", "#entrepreneur", "#leadership", "#marketing", "#success", "#networking", "#finance", "#startup"]
+    },
+    "lifestyle": {
+      "interests": ["fashion", "beauty", "home decor", "gardening", "pets", "family", "relationships", "self-care", "mindfulness", "sustainability"],
+      "bio_keywords": ["lifestyle", "fashion", "beauty", "family", "mindfulness", "sustainable", "wellness", "home"],
+      "hashtags": ["#lifestyle", "#fashion", "#beauty", "#family", "#mindfulness", "#sustainable", "#wellness", "#selfcare"]
+    },
+    "education": {
+      "interests": ["teaching", "learning", "research", "science", "history", "literature", "languages", "online courses", "academic writing", "mentoring"],
+      "bio_keywords": ["teacher", "educator", "student", "researcher", "academic", "scholar", "mentor", "learner"],
+      "hashtags": ["#education", "#learning", "#teaching", "#research", "#knowledge", "#academic", "#student", "#science"]
+    },
+    "entertainment": {
+      "interests": ["movies", "TV shows", "gaming", "music", "books", "podcasts", "comedy", "sports", "celebrities", "pop culture"],
+      "bio_keywords": ["movie buff", "gamer", "music lover", "bookworm", "entertainment", "fan", "critic", "reviewer"],
+      "hashtags": ["#movies", "#gaming", "#music", "#books", "#entertainment", "#popculture", "#fan", "#review"]
+    },
+    "social_causes": {
+      "interests": ["environmental protection", "social justice", "human rights", "animal welfare", "community service", "volunteering", "activism", "charity", "sustainability", "equality"],
+      "bio_keywords": ["activist", "volunteer", "advocate", "change maker", "humanitarian", "environmentalist", "social justice", "community"],
+      "hashtags": ["#activism", "#volunteer", "#socialchange", "#environment", "#equality", "#justice", "#community", "#charity"]
+    }
+  },
+  "demographic_patterns": {
+    "age_groups": {
+      "18-24": {
+        "probability": 0.25,
+        "preferred_interests": ["technology", "entertainment", "lifestyle", "travel", "fitness"],
+        "bio_style": "casual",
+        "follower_range": [50, 2000],
+        "following_range": [100, 1500],
+        "activity_level": "high"
+      },
+      "25-34": {
+        "probability": 0.35,
+        "preferred_interests": ["business", "technology", "travel", "fitness", "food"],
+        "bio_style": "professional_casual",
+        "follower_range": [100, 5000],
+        "following_range": [200, 2000],
+        "activity_level": "medium"
+      },
+      "35-44": {
+        "probability": 0.25,
+        "preferred_interests": ["business", "lifestyle", "food", "arts", "education"],
+        "bio_style": "professional",
+        "follower_range": [200, 3000],
+        "following_range": [150, 1000],
+        "activity_level": "medium"
+      },
+      "45-54": {
+        "probability": 0.10,
+        "preferred_interests": ["business", "education", "social_causes", "arts", "lifestyle"],
+        "bio_style": "professional",
+        "follower_range": [100, 2000],
+        "following_range": [100, 800],
+        "activity_level": "low"
+      },
+      "55+": {
+        "probability": 0.05,
+        "preferred_interests": ["social_causes", "education", "lifestyle", "arts", "travel"],
+        "bio_style": "formal",
+        "follower_range": [50, 1000],
+        "following_range": [50, 500],
+        "activity_level": "low"
+      }
+    },
+    "gender_distribution": {
+      "female": 0.52,
+      "male": 0.46,
+      "non_binary": 0.02
+    },
+    "location_types": {
+      "urban": 0.65,
+      "suburban": 0.25,
+      "rural": 0.10
+    }
+  },
+  "bio_templates": {
+    "casual": [
+      "{interest_description} | {location} | {fun_fact}",
+      "{profession} by day, {hobby} by night | {location}",
+      "Just a {adjective} person who loves {interest} | {emoji}",
+      "{interest_description} | Coffee addict ☕ | {location}",
+      "Living my best life in {location} | {interest} enthusiast",
+      "{hobby} | {interest} | {motivational_quote}",
+      "{age} | {location} | {interest_description} | {contact_info}"
+    ],
+    "professional_casual": [
+      "{profession} | {interest_description} | {location}",
+      "{company_role} passionate about {interest} | {location}",
+      "{profession} | {hobby} enthusiast | Sharing insights about {topic}",
+      "Helping people with {expertise} | {interest} lover | {location}",
+      "{profession} | {interest_description} | Let's connect!",
+      "{company_role} | {location} | {interest} | {achievement}",
+      "Professional {profession} | Personal {hobby} enthusiast | {location}"
+    ],
+    "professional": [
+      "{senior_title} at {company_type} | Expert in {expertise} | {location}",
+      "{profession} with {years}+ years experience | {specialization} | {location}",
+      "{title} | {industry} professional | {achievement} | {location}",
+      "Leading {team_type} teams | {expertise} specialist | {location}",
+      "{senior_title} | {industry} thought leader | Speaker & {role}",
+      "{profession} | {specialization} | {years}+ years in {industry} | {location}",
+      "{executive_title} | {company_type} | {expertise} | {professional_goal}"
+    ],
+    "formal": [
+      "{formal_title} | {years}+ years in {industry} | {location}",
+      "{senior_profession} | {specialization} expert | {formal_achievement}",
+      "{title} | {industry} veteran | {location} | {expertise}",
+      "Experienced {profession} | {specialization} | {formal_goal}",
+      "{formal_title} | {industry} professional | {years}+ years experience",
+      "{senior_title} | {expertise} specialist | {location} | {credential}"
+    ]
+  },
+  "username_patterns": {
+    "styles": [
+      "{first_name}_{last_name}",
+      "{first_name}{last_name}",
+      "{first_name}_{interest}",
+      "{interest}_{first_name}",
+      "{adjective}_{interest}",
+      "{first_name}_{number}",
+      "{interest}_{adjective}",
+      "{profession}_{first_name}",
+      "{first_name}_{year}",
+      "{hobby}_{enthusiast}"
+    ],
+    "adjectives": ["creative", "smart", "cool", "awesome", "amazing", "super", "pro", "expert", "master", "ninja", "guru", "wizard"],
+    "numbers": ["2024", "21", "23", "99", "101", "007", "42", "88", "77", "123"],
+    "enthusiast_words": ["lover", "fan", "enthusiast", "addict", "geek", "nerd", "pro", "expert", "guru", "ninja"]
+  },
+  "relationship_patterns": {
+    "follower_following_ratios": {
+      "influencer": {"min_ratio": 10, "max_ratio": 1000},
+      "popular": {"min_ratio": 2, "max_ratio": 10},
+      "average": {"min_ratio": 0.5, "max_ratio": 2},
+      "new_user": {"min_ratio": 0.1, "max_ratio": 0.5}
+    },
+    "engagement_patterns": {
+      "high_engagement": {"likes_per_follower": 0.05, "comments_per_follower": 0.01},
+      "medium_engagement": {"likes_per_follower": 0.02, "comments_per_follower": 0.005},
+      "low_engagement": {"likes_per_follower": 0.01, "comments_per_follower": 0.002}
+    }
+  },
+  "verification_patterns": {
+    "verified_probability": {
+      "influencer": 0.3,
+      "business": 0.15,
+      "celebrity": 0.8,
+      "regular": 0.001
+    },
+    "verification_criteria": {
+      "min_followers": 10000,
+      "account_age_months": 12,
+      "activity_level": "medium"
+    }
+  },
+  "activity_patterns": {
+    "posting_frequency": {
+      "high": {"posts_per_week": 14, "stories_per_week": 21},
+      "medium": {"posts_per_week": 7, "stories_per_week": 10},
+      "low": {"posts_per_week": 2, "stories_per_week": 3}
+    },
+    "online_hours": {
+      "morning_person": [6, 7, 8, 9, 10],
+      "day_active": [10, 11, 12, 13, 14, 15, 16],
+      "evening_person": [17, 18, 19, 20, 21, 22],
+      "night_owl": [22, 23, 0, 1, 2]
+    }
+  }
+}

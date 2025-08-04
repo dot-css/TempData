@@ -1,3 +1,104 @@
 {
   "hashtag_categories": {
-    "lifestyle": ["#lifestyle", "#life", "#daily", "#mood", "#vibes", "#blessed", "#g
+    "lifestyle": ["#lifestyle", "#life", "#daily", "#mood", "#vibes", "#blessed", "#grateful", "#mindfulness", "#selfcare", "#wellness"],
+    "food": ["#food", "#foodie", "#delicious", "#yummy", "#cooking", "#recipe", "#homemade", "#foodporn", "#instafood", "#tasty"],
+    "travel": ["#travel", "#wanderlust", "#adventure", "#explore", "#vacation", "#trip", "#journey", "#discover", "#travelgram", "#backpacking"],
+    "fitness": ["#fitness", "#workout", "#gym", "#health", "#fit", "#training", "#exercise", "#motivation", "#strong", "#cardio"],
+    "technology": ["#tech", "#technology", "#innovation", "#digital", "#ai", "#coding", "#programming", "#startup", "#gadgets", "#future"],
+    "business": ["#business", "#entrepreneur", "#success", "#marketing", "#leadership", "#growth", "#startup", "#networking", "#career", "#goals"],
+    "fashion": ["#fashion", "#style", "#outfit", "#ootd", "#trendy", "#fashionista", "#shopping", "#designer", "#beauty", "#accessories"],
+    "entertainment": ["#entertainment", "#music", "#movie", "#tv", "#celebrity", "#concert", "#show", "#performance", "#artist", "#culture"],
+    "sports": ["#sports", "#football", "#basketball", "#soccer", "#baseball", "#tennis", "#golf", "#running", "#athlete", "#championship"],
+    "nature": ["#nature", "#outdoors", "#hiking", "#camping", "#wildlife", "#photography", "#sunset", "#mountains", "#ocean", "#forest"]
+  },
+  "content_templates": {
+    "personal_update": [
+      "Just finished {activity} and feeling {emotion}! {hashtags}",
+      "Having a {adjective} day! {activity} was exactly what I needed. {hashtags}",
+      "Can't believe I just {achievement}! So {emotion} right now. {hashtags}",
+      "Spending my {time_period} {activity}. Life is good! {hashtags}",
+      "Quick update: {activity} and loving every minute of it! {hashtags}"
+    ],
+    "question": [
+      "What's your favorite {topic}? Mine is definitely {answer}! {hashtags}",
+      "Anyone else {activity}? Would love to hear your thoughts! {hashtags}",
+      "Quick question: {question_text}? Drop your answers below! {hashtags}",
+      "Help me decide: {option1} or {option2}? {hashtags}",
+      "What would you do if {scenario}? Curious to hear your take! {hashtags}"
+    ],
+    "motivational": [
+      "Remember: {motivational_quote} Keep pushing forward! {hashtags}",
+      "Today's reminder: {advice}. You've got this! {hashtags}",
+      "Monday motivation: {inspirational_message} {hashtags}",
+      "Never forget that {positive_affirmation}. Believe in yourself! {hashtags}",
+      "Your daily dose of positivity: {uplifting_message} {hashtags}"
+    ],
+    "sharing": [
+      "Just discovered {discovery} and had to share! {hashtags}",
+      "Sharing some {content_type} that made my day: {description} {hashtags}",
+      "Found this amazing {item} and thought you'd love it too! {hashtags}",
+      "Had to share this {adjective} {thing} with you all! {hashtags}",
+      "Stumbled upon {discovery} today. Absolutely {emotion}! {hashtags}"
+    ],
+    "event": [
+      "Just attended {event} and it was {adjective}! {hashtags}",
+      "Live from {location}! {event} is {emotion}! {hashtags}",
+      "Can't wait for {upcoming_event}! Who else is going? {hashtags}",
+      "Throwback to {past_event} - such {adjective} memories! {hashtags}",
+      "Currently at {event} and having a {adjective} time! {hashtags}"
+    ]
+  },
+  "viral_patterns": {
+    "trending_topics": ["AI revolution", "climate change", "remote work", "mental health", "cryptocurrency", "space exploration", "sustainable living", "social justice", "digital privacy", "future of education"],
+    "viral_formats": ["challenge", "tutorial", "reaction", "behind_the_scenes", "day_in_life", "transformation", "comparison", "storytime", "tips_and_tricks", "myth_busting"],
+    "engagement_boosters": ["tag a friend", "double tap if", "comment below", "share if you agree", "what do you think", "your turn", "let me know", "thoughts?", "agree or disagree", "who can relate"]
+  },
+  "platform_specific": {
+    "twitter": {
+      "max_length": 280,
+      "common_formats": ["thread", "retweet", "reply", "quote_tweet"],
+      "trending_indicators": ["#trending", "viral", "breaking", "THREAD"]
+    },
+    "instagram": {
+      "max_length": 2200,
+      "common_formats": ["story", "reel", "post", "igtv"],
+      "visual_focus": true,
+      "hashtag_heavy": true
+    },
+    "facebook": {
+      "max_length": 63206,
+      "common_formats": ["status", "share", "event", "poll"],
+      "longer_content": true
+    },
+    "tiktok": {
+      "max_length": 150,
+      "common_formats": ["video", "duet", "challenge", "trend"],
+      "hashtag_focus": ["#fyp", "#viral", "#trending", "#foryou"]
+    },
+    "linkedin": {
+      "max_length": 3000,
+      "common_formats": ["article", "update", "share", "poll"],
+      "professional_tone": true,
+      "business_hashtags": ["#professional", "#career", "#business", "#networking"]
+    }
+  },
+  "engagement_patterns": {
+    "time_based": {
+      "peak_hours": [9, 12, 15, 18, 21],
+      "weekend_boost": 1.3,
+      "holiday_boost": 1.8
+    },
+    "content_type_multipliers": {
+      "video": 2.5,
+      "image": 1.8,
+      "text": 1.0,
+      "poll": 1.6,
+      "story": 1.4
+    },
+    "viral_thresholds": {
+      "likes": 10000,
+      "shares": 1000,
+      "comments": 500
+    }
+  }
+}
