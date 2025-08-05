@@ -119,10 +119,51 @@ class LocalizationEngine:
             country: Country code or name
             
         Returns:
-            str: Locale string (e.g., 'en_US', 'ur_PK')
+            str: Locale string (e.g., 'en_US', 'en_PK')
         """
+        from faker.config import AVAILABLE_LOCALES
+        
         country_data = self.load_country_data(country)
-        return country_data.get('locale', 'en_US')
+        preferred_locale = country_data.get('locale', 'en_US')
+        
+        # Check if the preferred locale is supported by Faker
+        if preferred_locale in AVAILABLE_LOCALES:
+            return preferred_locale
+        
+        # Fallback logic for unsupported locales
+        country_lower = country.lower()
+        
+        # Country-specific fallbacks to supported locales
+        fallback_map = {
+            'pakistan': 'en_PK',
+            'india': 'en_IN',
+            'germany': 'de_DE',
+            'france': 'fr_FR',
+            'spain': 'es_ES',
+            'italy': 'it_IT',
+            'japan': 'ja_JP',
+            'china': 'zh_CN',
+            'brazil': 'pt_BR',
+            'russia': 'ru_RU',
+            'united_kingdom': 'en_GB',
+            'canada': 'en_CA',
+            'australia': 'en_AU',
+            'mexico': 'es_MX',
+            'netherlands': 'nl_NL',
+            'south_korea': 'ko_KR',
+            'turkey': 'tr_TR',
+            'poland': 'pl_PL',
+            'sweden': 'sv_SE',
+            'norway': 'no_NO'
+        }
+        
+        if country_lower in fallback_map:
+            fallback_locale = fallback_map[country_lower]
+            if fallback_locale in AVAILABLE_LOCALES:
+                return fallback_locale
+        
+        # Final fallback to English US
+        return 'en_US'
     
     def get_currency_info(self, country: str) -> Dict[str, str]:
         """
