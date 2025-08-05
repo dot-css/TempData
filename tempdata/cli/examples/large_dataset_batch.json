@@ -1,0 +1,34 @@
+{
+  "global": {
+    "country": "global",
+    "formats": ["parquet"],
+    "seed": 2024
+  },
+  "datasets": [
+    {
+      "filename": "large_customers.parquet",
+      "rows": 100000,
+      "type": "customers"
+    },
+    {
+      "filename": "large_sales.parquet", 
+      "rows": 1000000,
+      "type": "sales",
+      "relationships": ["large_customers"]
+    },
+    {
+      "filename": "web_analytics.parquet",
+      "rows": 5000000,
+      "type": "web_analytics"
+    }
+  ],
+  "relationships": [
+    {
+      "source_dataset": "large_customers",
+      "target_dataset": "large_sales",
+      "source_column": "customer_id",
+      "target_column": "customer_id",
+      "relationship_type": "one_to_many"
+    }
+  ]
+}

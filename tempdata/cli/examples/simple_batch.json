@@ -1,0 +1,19 @@
+{
+  "global": {
+    "country": "global",
+    "seed": 12345,
+    "formats": ["csv"]
+  },
+  "datasets": [
+    {
+      "filename": "customers.csv",
+      "rows": 1000,
+      "type": "customers"
+    },
+    {
+      "filename": "sales.csv",
+      "rows": 5000,
+      "type": "sales"
+    }
+  ]
+}

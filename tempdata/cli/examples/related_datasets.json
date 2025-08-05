@@ -1,0 +1,34 @@
+{
+  "global": {
+    "country": "pakistan",
+    "seed": 42,
+    "formats": ["csv", "json"]
+  },
+  "datasets": [
+    {
+      "filename": "customers.csv",
+      "rows": 1000,
+      "type": "customers"
+    },
+    {
+      "filename": "sales.csv",
+      "rows": 5000,
+      "type": "sales",
+      "relationships": ["customers"]
+    },
+    {
+      "filename": "products.csv",
+      "rows": 500,
+      "type": "ecommerce"
+    }
+  ],
+  "relationships": [
+    {
+      "source_dataset": "customers",
+      "target_dataset": "sales",
+      "source_column": "customer_id",
+      "target_column": "customer_id",
+      "relationship_type": "one_to_many"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+global:
+  country: united_states
+  seed: 98765
+  formats: 
+    - csv
+    - parquet
+  time_series: true
+  start_date: "2024-01-01"
+  end_date: "2024-12-31"
+  interval: "1hour"
+
+datasets:
+  - filename: weather_sensors.csv
+    rows: 8760  # 24 hours * 365 days
+    type: weather
+    
+  - filename: energy_consumption.csv
+    rows: 8760
+    type: energy
+    
+  - filename: stock_prices.csv
+    rows: 2000  # Trading days only
+    type: stocks
+    interval: "1day"  # Override global interval
