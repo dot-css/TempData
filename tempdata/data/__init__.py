@@ -6,11 +6,11 @@ to create realistic patterns and localized content.
 """
 
 from .data_loader import (
-    LazyDataLoader,
     CountryDataManager,
     get_data_loader,
     get_country_manager
 )
+from ..core.caching import LazyDataLoader
 from .template_loader import (
     TemplateLoader,
     get_template_loader

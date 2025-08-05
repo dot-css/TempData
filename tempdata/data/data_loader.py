@@ -1,8 +1,7 @@
 """
 Data loading utilities for efficient reference data access
 
-Provides lazy loading system for memory efficiency and caching
-for frequently accessed geographical and reference data.
+Provides enhanced data loading with multi-level caching and geographical utilities.
 """
 
 import json
@@ -13,120 +12,40 @@ import threading
 from functools import lru_cache
 import logging
 
+from ..core.caching import LazyDataLoader, CacheConfig
+
 logger = logging.getLogger(__name__)
 
 
-class LazyDataLoader:
+class GeographicalDataLoader(LazyDataLoader):
     """
-    Lazy loading system for reference data with memory efficiency
+    Specialized data loader for geographical and reference data
     
-    Implements caching and lazy loading to minimize memory usage
-    while providing fast access to frequently used data.
+    Extends the enhanced LazyDataLoader with geographical-specific
+    methods and fallback logic for country data.
     """
     
-    def __init__(self, data_root: Optional[Path] = None):
+    def __init__(self, config: Optional[Union[CacheConfig, Path]] = None, data_root: Optional[Path] = None):
         """
-        Initialize lazy data loader
+        Initialize geographical data loader
         
         Args:
+            config: Cache configuration or data root path (for backward compatibility)
             data_root: Root path for data files (defaults to package data directory)
         """
+        # Handle backward compatibility - if config is a Path, treat it as data_root
+        if isinstance(config, Path):
+            data_root = config
+            config = None
+        
         if data_root is None:
             data_root = Path(__file__).parent
         
-        self.data_root = Path(data_root)
-        self._cache: Dict[str, Any] = {}
-        self._cache_lock = threading.RLock()
-        self._loaded_files = set()
+        super().__init__(config, data_root)
         
         # Validate data directory exists
         if not self.data_root.exists():
             raise FileNotFoundError(f"Data directory not found: {self.data_root}")
-    
-    def _get_cache_key(self, file_path: str, section: Optional[str] = None) -> str:
-        """Generate cache key for file and optional section"""
-        if section:
-            return f"{file_path}:{section}"
-        return file_path
-    
-    def _load_json_file(self, file_path: Path) -> Dict[str, Any]:
-        """
-        Load JSON file with error handling
-        
-        Args:
-            file_path: Path to JSON file
-            
-        Returns:
-            Dict[str, Any]: Loaded JSON data
-            
-        Raises:
-            FileNotFoundError: If file doesn't exist
-            json.JSONDecodeError: If file contains invalid JSON
-        """
-        if not file_path.exists():
-            raise FileNotFoundError(f"Data file not found: {file_path}")
-        
-        try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except json.JSONDecodeError as e:
-            logger.error(f"Invalid JSON in file {file_path}: {e}")
-            raise
-        except Exception as e:
-            logger.error(f"Error loading file {file_path}: {e}")
-            raise
-    
-    def load_data(self, file_path: str, section: Optional[str] = None, 
-                  force_reload: bool = False) -> Union[Dict[str, Any], Any]:
-        """
-        Load data from file with lazy loading and caching
-        
-        Args:
-            file_path: Relative path to data file from data root
-            section: Optional section key to extract from loaded data
-            force_reload: Force reload even if cached
-            
-        Returns:
-            Union[Dict[str, Any], Any]: Loaded data or section
-        """
-        cache_key = self._get_cache_key(file_path, section)
-        
-        with self._cache_lock:
-            # Return cached data if available and not forcing reload
-            if not force_reload and cache_key in self._cache:
-                return self._cache[cache_key]
-            
-            # Load file if not already loaded or forcing reload
-            full_path = self.data_root / file_path
-            
-            if force_reload or file_path not in self._loaded_files:
-                try:
-                    data = self._load_json_file(full_path)
-                    
-                    # Cache the full file data
-                    file_cache_key = self._get_cache_key(file_path)
-                    self._cache[file_cache_key] = data
-                    self._loaded_files.add(file_path)
-                    
-                    logger.debug(f"Loaded data file: {file_path}")
-                    
-                except Exception as e:
-                    logger.error(f"Failed to load data file {file_path}: {e}")
-                    raise
-            
-            # Get the full data from cache
-            full_data = self._cache[self._get_cache_key(file_path)]
-            
-            # Extract section if specified
-            if section:
-                if section in full_data:
-                    section_data = full_data[section]
-                    self._cache[cache_key] = section_data
-                    return section_data
-                else:
-                    raise KeyError(f"Section '{section}' not found in {file_path}")
-            
-            return full_data
     
     def get_country_data(self, country: Optional[str] = None) -> Dict[str, Any]:
         """
@@ -141,10 +60,10 @@ class LazyDataLoader:
         # Try comprehensive data first, fallback to original
         try:
             data = self.load_data("countries/comprehensive_country_data.json")
-        except FileNotFoundError:
+        except (FileNotFoundError, RuntimeError):
             try:
                 data = self.load_data("countries/country_data.json")
-            except FileNotFoundError:
+            except (FileNotFoundError, RuntimeError):
                 logger.warning("No country data files found, using minimal fallback")
                 data = {
                     'global': {
@@ -178,10 +97,10 @@ class LazyDataLoader:
         try:
             # Try comprehensive boundaries first
             data = self.load_data("countries/comprehensive_city_boundaries.json")
-        except FileNotFoundError:
+        except (FileNotFoundError, RuntimeError):
             try:
                 data = self.load_data("countries/city_boundaries.json")
-            except FileNotFoundError:
+            except (FileNotFoundError, RuntimeError):
                 logger.warning("No city boundary data found")
                 return {}
         
@@ -203,7 +122,7 @@ class LazyDataLoader:
         """
         try:
             data = self.load_data("countries/states_provinces.json")
-        except FileNotFoundError:
+        except (FileNotFoundError, RuntimeError):
             logger.warning("No states/provinces data found")
             return {}
         
@@ -226,46 +145,9 @@ class LazyDataLoader:
         try:
             data = self.load_data(f"countries/postal_codes/{country.lower()}.json")
             return data.get('postal_codes', [])
-        except FileNotFoundError:
+        except (FileNotFoundError, RuntimeError):
             logger.warning(f"No postal codes found for country: {country}")
             return []
-    
-    def clear_cache(self, file_path: Optional[str] = None) -> None:
-        """
-        Clear cache for specific file or all cached data
-        
-        Args:
-            file_path: Specific file to clear from cache (if None, clears all)
-        """
-        with self._cache_lock:
-            if file_path:
-                # Clear specific file and its sections
-                keys_to_remove = [k for k in self._cache.keys() 
-                                if k.startswith(file_path)]
-                for key in keys_to_remove:
-                    del self._cache[key]
-                
-                if file_path in self._loaded_files:
-                    self._loaded_files.remove(file_path)
-            else:
-                # Clear all cache
-                self._cache.clear()
-                self._loaded_files.clear()
-    
-    def get_cache_stats(self) -> Dict[str, Any]:
-        """
-        Get cache statistics for monitoring
-        
-        Returns:
-            Dict[str, Any]: Cache statistics
-        """
-        with self._cache_lock:
-            return {
-                'cached_items': len(self._cache),
-                'loaded_files': len(self._loaded_files),
-                'cache_keys': list(self._cache.keys()),
-                'loaded_files_list': list(self._loaded_files)
-            }
 
 
 class CountryDataManager:
@@ -276,14 +158,14 @@ class CountryDataManager:
     localization data with built-in validation and fallbacks.
     """
     
-    def __init__(self, data_loader: Optional[LazyDataLoader] = None):
+    def __init__(self, data_loader: Optional[GeographicalDataLoader] = None):
         """
         Initialize country data manager
         
         Args:
             data_loader: Optional data loader instance (creates new if None)
         """
-        self.data_loader = data_loader or LazyDataLoader()
+        self.data_loader = data_loader or GeographicalDataLoader()
         self._supported_countries_cache = None
     
     @lru_cache(maxsize=128)
@@ -387,11 +269,11 @@ _default_loader = None
 _default_manager = None
 
 
-def get_data_loader() -> LazyDataLoader:
+def get_data_loader() -> GeographicalDataLoader:
     """Get default data loader instance (singleton)"""
     global _default_loader
     if _default_loader is None:
-        _default_loader = LazyDataLoader()
+        _default_loader = GeographicalDataLoader()
     return _default_loader
 
 

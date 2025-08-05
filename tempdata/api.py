@@ -11,6 +11,7 @@ import re
 from pathlib import Path
 
 from .core.seeding import MillisecondSeeder
+from .core.streaming import StreamingGenerator, StreamingConfig, auto_detect_streaming_config
 from .exporters.export_manager import ExportManager
 
 # Import all available generators
@@ -66,6 +67,8 @@ def create_dataset(filename: str, rows: int = 500, **kwargs) -> str:
             - start_date: Start date for time series (default: None)
             - end_date: End date for time series (default: None)
             - interval: Time series interval (default: '1day')
+            - use_streaming: Force streaming generation (default: False, auto-enabled for 100K+ rows)
+            - streaming_config: StreamingConfig object for custom streaming settings (default: None)
     
     Returns:
         str: Path to generated file(s) or comma-separated paths for multiple formats
@@ -138,22 +141,58 @@ def create_dataset(filename: str, rows: int = 500, **kwargs) -> str:
     generator_class = DATASET_GENERATORS[dataset_type]
     generator = generator_class(seeder, locale)
     
+    # Check if streaming should be used
+    streaming_config = kwargs.get('streaming_config')
+    use_streaming = kwargs.get('use_streaming', False)
+    
+    # Auto-detect streaming if not explicitly specified
+    if not use_streaming and not streaming_config:
+        # Auto-enable streaming for large datasets
+        if rows >= 100000:  # 100K rows threshold
+            use_streaming = True
+            streaming_config = auto_detect_streaming_config(rows)
+    
     # Generate data
     try:
-        if time_series:
-            # Pass time series parameters to generator
-            time_series_params = {
-                'time_series': True,
-                'start_date': kwargs.get('start_date'),
-                'end_date': kwargs.get('end_date'),
-                'interval': kwargs.get('interval', '1day')
-            }
-            data = generator.generate(rows, **time_series_params)
+        if use_streaming or streaming_config:
+            # Use streaming generation for large datasets
+            if not streaming_config:
+                streaming_config = auto_detect_streaming_config(rows)
+            
+            streaming_generator = StreamingGenerator(generator, streaming_config)
+            
+            if time_series:
+                # Pass time series parameters to streaming generator
+                time_series_params = {
+                    'time_series': True,
+                    'start_date': kwargs.get('start_date'),
+                    'end_date': kwargs.get('end_date'),
+                    'interval': kwargs.get('interval', '1day')
+                }
+                data = streaming_generator.generate_complete(rows, **time_series_params)
+            else:
+                # Filter out API-level parameters before passing to generator
+                generator_kwargs = {k: v for k, v in kwargs.items() 
+                                  if k not in ['country', 'seed', 'formats', 'time_series', 
+                                             'streaming_config', 'use_streaming']}
+                data = streaming_generator.generate_complete(rows, **generator_kwargs)
         else:
-            # Filter out API-level parameters before passing to generator
-            generator_kwargs = {k: v for k, v in kwargs.items() 
-                              if k not in ['country', 'seed', 'formats', 'time_series']}
-            data = generator.generate(rows, **generator_kwargs)
+            # Use regular generation for smaller datasets
+            if time_series:
+                # Pass time series parameters to generator
+                time_series_params = {
+                    'time_series': True,
+                    'start_date': kwargs.get('start_date'),
+                    'end_date': kwargs.get('end_date'),
+                    'interval': kwargs.get('interval', '1day')
+                }
+                data = generator.generate(rows, **time_series_params)
+            else:
+                # Filter out API-level parameters before passing to generator
+                generator_kwargs = {k: v for k, v in kwargs.items() 
+                                  if k not in ['country', 'seed', 'formats', 'time_series',
+                                             'streaming_config', 'use_streaming']}
+                data = generator.generate(rows, **generator_kwargs)
     except Exception as e:
         raise IOError(f"Failed to generate {dataset_type} data: {str(e)}")
     
