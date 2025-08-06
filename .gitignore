@@ -1,6 +1,3 @@
+# Ignore specific hidden directories
 .kiro/
 .github/
-*.kiro/
-*.github/
-.kiro
-.github
