@@ -1,3 +1,5 @@
 # Ignore specific hidden directories
 .kiro/
 .github/
+.benchmarks
+.pytest_cache

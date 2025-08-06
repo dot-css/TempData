@@ -15,7 +15,7 @@ from .core.streaming import StreamingGenerator, StreamingConfig, auto_detect_str
 from .exporters.export_manager import ExportManager
 
 # Import all available generators
-from .datasets.business import SalesGenerator, CustomerGenerator, EcommerceGenerator
+from .datasets.business import SalesGenerator, CustomerGenerator, EcommerceGenerator, MarketingGenerator
 from .datasets.financial import StockGenerator, BankingGenerator
 from .datasets.healthcare import PatientGenerator, AppointmentGenerator
 from .datasets.technology import WebAnalyticsGenerator, SystemLogsGenerator
@@ -29,6 +29,7 @@ DATASET_GENERATORS = {
     'sales': SalesGenerator,
     'customers': CustomerGenerator,
     'ecommerce': EcommerceGenerator,
+    'marketing': MarketingGenerator,
     
     # Financial datasets
     'stocks': StockGenerator,
@@ -234,6 +235,8 @@ def _extract_dataset_type(filename: str) -> str:
         return 'customers'
     elif 'ecommerce' in base_name or 'order' in base_name or 'shop' in base_name:
         return 'ecommerce'
+    elif 'marketing' in base_name or 'campaign' in base_name or 'lead' in base_name:
+        return 'marketing'
     elif 'stock' in base_name or 'market' in base_name:
         return 'stocks'
     elif 'bank' in base_name or 'account' in base_name:

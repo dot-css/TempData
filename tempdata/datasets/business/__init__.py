@@ -8,9 +8,11 @@ ecommerce, inventory, marketing, employees, suppliers, retail, reviews, and CRM.
 from .sales import SalesGenerator
 from .customers import CustomerGenerator
 from .ecommerce import EcommerceGenerator
+from .marketing import MarketingGenerator
 
 __all__ = [
     "SalesGenerator",
     "CustomerGenerator",
-    "EcommerceGenerator"
+    "EcommerceGenerator",
+    "MarketingGenerator"
 ]

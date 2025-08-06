@@ -17,6 +17,9 @@ try:
 except ImportError:
     PANDAS_AVAILABLE = False
 
+# Import the proper API functions
+from .api import create_dataset as _api_create_dataset, create_batch as _api_create_batch
+
 def create_dataset(filename, rows=500, country="united_states", seed=None, **kwargs):
     """Create a realistic dataset and save to file.
     
@@ -44,54 +47,8 @@ def create_dataset(filename, rows=500, country="united_states", seed=None, **kwa
     if not PANDAS_AVAILABLE:
         raise ImportError("pandas is required for dataset generation")
     
-    if seed is not None:
-        np.random.seed(seed)
-    
-    # Generate basic sample data
-    data = {
-        'id': range(1, rows + 1),
-        'name': [f'Sample {i}' for i in range(1, rows + 1)],
-        'value': np.random.randn(rows),
-        'category': np.random.choice(['A', 'B', 'C'], rows),
-        'country': [country] * rows
-    }
-    
-    # Add time series data if requested
-    if kwargs.get('time_series', False):
-        start_date = kwargs.get('start_date', '2024-01-01')
-        data['timestamp'] = pd.date_range(start=start_date, periods=rows, freq='D')
-    
-    df = pd.DataFrame(data)
-    
-    # Handle multiple formats
-    formats = kwargs.get('formats', ['csv'])
-    if isinstance(formats, str):
-        formats = [formats]
-    
-    paths = []
-    for fmt in formats:
-        if fmt == 'csv':
-            path = filename if filename.endswith('.csv') else f"{filename}.csv"
-            df.to_csv(path, index=False)
-        elif fmt == 'json':
-            path = filename.replace('.csv', '.json') if filename.endswith('.csv') else f"{filename}.json"
-            df.to_json(path, orient='records', indent=2)
-        elif fmt == 'parquet':
-            path = filename.replace('.csv', '.parquet') if filename.endswith('.csv') else f"{filename}.parquet"
-            try:
-                df.to_parquet(path, index=False)
-            except ImportError:
-                # Fallback to CSV if parquet not available
-                path = path.replace('.parquet', '.csv')
-                df.to_csv(path, index=False)
-        else:
-            # Default to CSV
-            path = filename if filename.endswith('.csv') else f"{filename}.csv"
-            df.to_csv(path, index=False)
-        
-        paths.append(path)
-    
-    return paths[0] if len(paths) == 1 else paths
+    # Use the proper API function
+    return _api_create_dataset(filename, rows=rows, country=country, seed=seed, **kwargs)
 
 def create_batch(datasets, country="united_states", seed=None, **kwargs):
     """Create multiple related datasets with referential integrity.
@@ -117,20 +74,11 @@ def create_batch(datasets, country="united_states", seed=None, **kwargs):
         >>> print(f"Generated: {paths}")
         Generated: ['customers.csv', 'orders.csv']
     """
-    paths = []
-    for dataset in datasets:
-        filename = dataset['filename']
-        rows = dataset.get('rows', 500)
-        
-        # Handle relationships (simplified for now)
-        if 'relationships' in dataset:
-            # Add foreign key columns for relationships
-            pass
-        
-        path = create_dataset(filename, rows=rows, country=country, seed=seed, **kwargs)
-        paths.append(path)
+    if not PANDAS_AVAILABLE:
+        raise ImportError("pandas is required for dataset generation")
     
-    return paths
+    # Use the proper API function
+    return _api_create_batch(datasets, country=country, seed=seed, **kwargs)
 
 class geo:
     """Geographical data generation utilities."""
