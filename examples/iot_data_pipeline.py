@@ -5,6 +5,19 @@ IoT Data Pipeline Example
 This example demonstrates how to create comprehensive IoT sensor datasets
 using TempData, including weather sensors, energy monitoring, and smart home
 devices with realistic temporal patterns and correlations.
+
+This tutorial covers:
+- Requirement 2.5: IoT sensor datasets (weather, energy, traffic, environmental, industrial, smart home)
+- Requirement 5.1: Time series generation with realistic temporal patterns and correlations
+- Requirement 8.1: Batch generation with maintained sensor relationships
+
+The example creates IoT ecosystems suitable for:
+- Time series analysis and forecasting
+- Anomaly detection in sensor readings
+- IoT dashboard development and testing
+- Machine learning model training for predictive maintenance
+- Real-time streaming analytics testing
+- Edge computing simulation
 """
 
 import tempdata

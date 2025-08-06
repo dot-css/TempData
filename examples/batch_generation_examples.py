@@ -5,6 +5,18 @@ Batch Generation Examples
 This example demonstrates how to create related datasets using TempData's
 batch generation capabilities, showing how to maintain referential integrity
 and relationships between different dataset types.
+
+This tutorial covers:
+- Requirement 8.1: Batch generation with maintained referential integrity
+- Requirement 2.1: Business datasets with realistic relationships
+- Requirement 5.1: Time series generation across related datasets
+
+The example creates comprehensive ecosystems suitable for:
+- Testing complex database schemas
+- ETL pipeline validation with referential integrity
+- Data warehouse star/snowflake schema testing
+- Multi-table analytics and reporting
+- Relationship-aware machine learning datasets
 """
 
 import tempdata

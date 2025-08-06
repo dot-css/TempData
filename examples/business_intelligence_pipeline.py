@@ -5,6 +5,18 @@ Business Intelligence Pipeline Example
 This example demonstrates how to create a comprehensive business intelligence
 dataset using TempData, including related datasets for customers, products,
 sales, and analytics with realistic business patterns.
+
+This tutorial covers:
+- Requirement 2.1: Business datasets (sales, customers, ecommerce, inventory, marketing, etc.)
+- Requirement 5.1: Time series generation with realistic temporal patterns
+- Requirement 8.1: Batch generation with maintained referential integrity
+
+The example creates a complete BI ecosystem suitable for:
+- Dashboard development and testing
+- ETL pipeline validation
+- Data warehouse schema testing
+- Business analytics and reporting
+- Machine learning model training
 """
 
 import tempdata

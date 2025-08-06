@@ -5,6 +5,20 @@ Financial Analysis Pipeline Example
 This example demonstrates how to create comprehensive financial datasets
 using TempData, including stock market data, banking transactions, and
 financial analytics with realistic market patterns and correlations.
+
+This tutorial covers:
+- Requirement 2.2: Financial datasets (stocks, banking, crypto, insurance, loans, investments, accounting, payments)
+- Requirement 5.1: Time series generation with realistic market volatility and trading patterns
+- Requirement 8.1: Batch generation with maintained financial relationships
+
+The example creates financial ecosystems suitable for:
+- Portfolio risk assessment and optimization
+- Algorithmic trading strategy backtesting
+- Fraud detection model training
+- Credit risk modeling and scoring
+- Market volatility analysis and forecasting
+- Regulatory compliance testing
+- High-frequency trading system testing
 """
 
 import tempdata
