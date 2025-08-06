@@ -1,0 +1,47 @@
+# Include documentation files
+include README.md
+include LICENSE
+include CHANGELOG.md
+include CONTRIBUTING.md
+
+# Include configuration files
+include pyproject.toml
+include setup.py
+include .readthedocs.yaml
+
+# Include data files
+recursive-include tempdata/data *.json *.txt *.csv
+
+# Include examples
+recursive-include examples *.py *.md
+
+# Include documentation source
+recursive-include docs *.rst *.md *.py
+recursive-include docs/_static *
+recursive-include docs/_templates *
+
+# Include tests (for source distributions)
+recursive-include tests *.py
+
+# Exclude development and build files
+exclude .gitignore
+exclude .pre-commit-config.yaml
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * *.so
+recursive-exclude * .DS_Store
+recursive-exclude * Thumbs.db
+
+# Exclude build directories
+prune build
+prune dist
+prune *.egg-info
+prune .git
+prune .github
+prune .pytest_cache
+prune .mypy_cache
+prune .coverage
+prune htmlcov
+
+# Exclude documentation build
+prune docs/_build

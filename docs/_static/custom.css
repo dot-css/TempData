@@ -1,0 +1,137 @@
+/* Custom CSS for TempData documentation */
+
+/* Brand colors */
+:root {
+    --tempdata-primary: #2980B9;
+    --tempdata-secondary: #3498DB;
+    --tempdata-accent: #E74C3C;
+    --tempdata-success: #27AE60;
+    --tempdata-warning: #F39C12;
+    --tempdata-dark: #2C3E50;
+    --tempdata-light: #ECF0F1;
+}
+
+/* Logo and branding */
+.wy-side-nav-search {
+    background-color: var(--tempdata-primary);
+}
+
+.wy-side-nav-search > a {
+    color: white;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+/* Navigation styling */
+.wy-nav-side {
+    background: var(--tempdata-dark);
+}
+
+.wy-menu-vertical a {
+    color: var(--tempdata-light);
+}
+
+.wy-menu-vertical a:hover {
+    background-color: var(--tempdata-primary);
+    color: white;
+}
+
+/* Code blocks */
+.highlight {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+}
+
+.highlight pre {
+    background: transparent;
+    border: none;
+    margin: 0;
+    padding: 1em;
+}
+
+/* Admonitions */
+.admonition {
+    border-radius: 4px;
+    border-left: 4px solid;
+    margin: 1em 0;
+    padding: 0.5em 1em;
+}
+
+.admonition.note {
+    border-left-color: var(--tempdata-secondary);
+    background-color: #e3f2fd;
+}
+
+.admonition.warning {
+    border-left-color: var(--tempdata-warning);
+    background-color: #fff3e0;
+}
+
+.admonition.tip {
+    border-left-color: var(--tempdata-success);
+    background-color: #e8f5e8;
+}
+
+/* Tables */
+.wy-table-responsive table td,
+.wy-table-responsive table th {
+    white-space: normal;
+}
+
+/* API documentation */
+.py.class > dt,
+.py.function > dt,
+.py.method > dt {
+    background-color: var(--tempdata-light);
+    border-left: 4px solid var(--tempdata-primary);
+    padding-left: 1em;
+}
+
+/* Version badge */
+.version {
+    background-color: var(--tempdata-success);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.8em;
+}
+
+/* Footer */
+.rst-footer-buttons {
+    margin-top: 2em;
+    padding-top: 1em;
+    border-top: 1px solid #e1e4e5;
+}
+
+/* Mobile responsiveness */
+@media screen and (max-width: 768px) {
+    .wy-nav-side {
+        left: -300px;
+    }
+    
+    .wy-nav-side.shift {
+        left: 0;
+    }
+    
+    .wy-nav-content-wrap {
+        margin-left: 0;
+    }
+    
+    .wy-nav-content-wrap.shift {
+        margin-left: 300px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .wy-nav-side,
+    .wy-nav-top,
+    .rst-footer-buttons {
+        display: none;
+    }
+    
+    .wy-nav-content-wrap {
+        margin-left: 0;
+    }
+}
