@@ -4,8 +4,6 @@
 [![Python Support](https://img.shields.io/pypi/pyversions/tempdata.svg)](https://pypi.org/project/tempdata/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation Status](https://readthedocs.org/projects/tempdata/badge/?version=latest)](https://tempdata.readthedocs.io/en/latest/?badge=latest)
-[![Build Status](https://github.com/dot-css/tempdata/workflows/CI/badge.svg)](https://github.com/dot-css/tempdata/actions)
-[![Coverage Status](https://codecov.io/gh/dot-css/tempdata/branch/main/graph/badge.svg)](https://codecov.io/gh/dot-css/tempdata)
 
 **TempData** is a comprehensive Python library designed to generate realistic fake data for testing, development, and prototyping purposes. With support for 40+ dataset types spanning business, financial, healthcare, technology, IoT, and social domains, TempData provides worldwide geographical capabilities and time-based dynamic seeding for reproducible yet unique data generation.
 
