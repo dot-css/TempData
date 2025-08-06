@@ -40,6 +40,3 @@ Paste the complete error message here
 
 **Additional context**
 Add any other context about the problem here.
-
-**Possible solution**
-If you have ideas about how to fix the issue, please describe them here.

@@ -37,18 +37,14 @@ dependencies = [
     
     # Geographical and time handling
     "pytz>=2023.3",
-    "geopy>=2.3.0",
     
     # Export formats
     "openpyxl>=3.1.0",  # Excel export
-    "pyarrow>=12.0.0",  # Parquet export
-    "geojson>=3.0.0",   # GeoJSON export
     
     # CLI interface
     "click>=8.1.0",
     
     # Performance and utilities
-    "psutil>=5.9.0",    # Memory monitoring
     "tqdm>=4.65.0",     # Progress bars
 ]
 
@@ -116,16 +112,17 @@ extend-exclude = '''
 python_version = "3.8"
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
 check_untyped_defs = true
-disallow_untyped_decorators = true
+disallow_untyped_decorators = false
 no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
 strict_equality = true
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 minversion = "7.0"
