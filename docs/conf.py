@@ -2,6 +2,8 @@
 
 import os
 import sys
+
+# Add the parent directory to the path
 sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
@@ -17,7 +19,6 @@ version = '0.1.0'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon',
     'myst_parser',
 ]
 
@@ -31,31 +32,17 @@ html_static_path = ['_static']
 
 # Theme options
 html_theme_options = {
-    'canonical_url': 'https://tempdata.readthedocs.io/',
     'display_version': True,
     'prev_next_buttons_location': 'bottom',
-    'style_nav_header_background': '#2980B9',
     'collapse_navigation': True,
     'sticky_navigation': True,
     'navigation_depth': 4,
 }
 
-# Custom CSS
-html_css_files = [
-    'custom.css',
-]
-
-# -- Extension configuration -------------------------------------------------
-
-# Napoleon settings
-napoleon_google_docstring = True
-napoleon_numpy_docstring = True
-
 # MyST parser settings
 myst_enable_extensions = [
     "colon_fence",
     "deflist",
-    "html_admonition",
     "linkify",
     "replacements",
     "smartquotes",
@@ -71,3 +58,14 @@ source_suffix = {
 
 # Master document
 master_doc = 'index'
+
+# Mock imports for modules that might not be available during doc build
+autodoc_mock_imports = [
+    'pandas', 
+    'numpy', 
+    'faker', 
+    'pytz', 
+    'click', 
+    'tqdm', 
+    'openpyxl'
+]

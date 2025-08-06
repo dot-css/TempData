@@ -13,11 +13,7 @@ TempData Documentation
    :target: https://opensource.org/licenses/MIT
    :alt: License: MIT
 
-.. image:: https://github.com/dot-css/tempdata/workflows/CI/badge.svg
-   :target: https://github.com/dot-css/tempdata/actions
-   :alt: Build Status
-
-**TempData** is a comprehensive Python library designed to generate realistic fake data for testing, development, and prototyping purposes. With support for 40+ dataset types spanning business, financial, healthcare, technology, IoT, and social domains, TempData provides worldwide geographical capabilities and time-based dynamic seeding for reproducible yet unique data generation.
+**TempData** is a comprehensive Python library designed to generate realistic fake data for testing, development, and prototyping purposes.
 
 Key Features
 ------------
@@ -40,11 +36,7 @@ Installation
 
 .. code-block:: bash
 
-   # Install from PyPI
    pip install tempdata
-
-   # Install with all optional dependencies
-   pip install tempdata[dev,docs,performance]
 
 Basic Usage
 ~~~~~~~~~~~
@@ -74,6 +66,45 @@ Basic Usage
        interval='1day'
    )
 
+API Reference
+-------------
+
+.. automodule:: tempdata
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Core Functions
+~~~~~~~~~~~~~~
+
+.. autofunction:: tempdata.create_dataset
+
+.. autofunction:: tempdata.create_batch
+
+Geographical Utilities
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: tempdata.geo
+   :members:
+
+Configuration
+~~~~~~~~~~~~~
+
+.. autoclass:: tempdata.config
+   :members:
+
+Performance Monitoring
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: tempdata.performance
+   :members:
+
+Examples
+~~~~~~~~
+
+.. autoclass:: tempdata.examples
+   :members:
+
 Table of Contents
 -----------------
 
@@ -83,50 +114,14 @@ Table of Contents
 
    user-guide/installation
    user-guide/quickstart
-   user-guide/dataset-types
-   user-guide/geographical-data
-   user-guide/time-series
-   user-guide/batch-generation
-   user-guide/export-formats
-   user-guide/cli
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Examples
-
-   examples/business-intelligence
-   examples/iot-pipelines
-   examples/financial-analysis
-   examples/batch-relationships
-   examples/performance-optimization
-
-.. toctree::
-   :maxdepth: 2
-   :caption: API Reference
-
-   api/core
-   api/generators
-   api/geographical
-   api/time-series
-   api/exporters
-   api/cli
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Advanced Topics
-
-   advanced/performance
-   advanced/customization
-   advanced/extending
-   advanced/best-practices
 
 .. toctree::
    :maxdepth: 1
    :caption: Development
 
-   contributing
-   changelog
-   license
+   README
+   CONTRIBUTING
+   CHANGELOG
 
 Indices and tables
 ==================
