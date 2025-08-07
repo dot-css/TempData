@@ -12,6 +12,9 @@ from .marketing import MarketingGenerator
 from .employees import EmployeesGenerator
 from .suppliers import SuppliersGenerator
 from .retail import RetailGenerator
+from .inventory import InventoryGenerator
+from .reviews import ReviewsGenerator
+from .crm import CRMGenerator
 
 __all__ = [
     "SalesGenerator",
@@ -20,5 +23,8 @@ __all__ = [
     "MarketingGenerator",
     "EmployeesGenerator",
     "SuppliersGenerator",
-    "RetailGenerator"
+    "RetailGenerator",
+    "InventoryGenerator",
+    "ReviewsGenerator",
+    "CRMGenerator"
 ]
