@@ -10,11 +10,15 @@ from .customers import CustomerGenerator
 from .ecommerce import EcommerceGenerator
 from .marketing import MarketingGenerator
 from .employees import EmployeesGenerator
+from .suppliers import SuppliersGenerator
+from .retail import RetailGenerator
 
 __all__ = [
     "SalesGenerator",
     "CustomerGenerator",
     "EcommerceGenerator",
     "MarketingGenerator",
-    "EmployeesGenerator"
+    "EmployeesGenerator",
+    "SuppliersGenerator",
+    "RetailGenerator"
 ]
