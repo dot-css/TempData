@@ -25,6 +25,8 @@
 # Install from PyPI
 pip install tempdata
 
+pip install git+https://github.com/dot-css/tempdata.git
+
 # Install with all optional dependencies
 pip install tempdata[dev,docs,performance]
 
